@@ -1,0 +1,55 @@
+application {
+  config {
+    applicationType monolith
+    authenticationType oauth2
+    baseName WbaHipster
+    buildTool maven
+    cacheProvider ehcache
+    clientFramework angularX
+    clientPackageManager npm
+    clientTheme none
+    databaseType sql
+    devDatabaseType h2Disk
+    dtoSuffix DTO
+    enableHibernateCache true
+    enableSwaggerCodegen false
+    enableTranslation true
+    jhiPrefix jhi
+    jwtSecretKey "ZWQ3NTE5NjI2ODY3OGFmZmU2N2NkNjhmZDRkOGQwZTBmZWQ1OGQ1ZmFmYjZjNzZhOTYxOWYxZmU0NmE4NmEzZWY5ZWE1NmExNzQ2YTk0ODk0MDE1NTQwYWZmN2Y3MDYzZWE3YzQ0YzRmZWE4NTZhYjRlMjVhMTBkNGJhZmY3NDc="
+    languages [en, de]
+  	messageBroker kafka
+    nativeLanguage en
+    packageName com.dtit.tm
+    prodDatabaseType mysql
+    searchEngine false
+    serverPort 8084
+    serviceDiscoveryType false
+    skipClient false
+    skipServer false
+    skipUserManagement false
+    testFrameworks [gatling]
+    useSass true
+    websocket false
+  }
+
+  entities BngInfo, LineInfo
+}
+
+entity BngInfo {
+  endSz String,
+  lineId String,
+  portName String,
+  tsLastQuery String,
+  tsLastQuerySuccess String
+}
+entity LineInfo {
+  lineId String,
+  uplinkPort String,
+  ipAddress String,
+  tsLastQuery String,
+  tsLastQuerySuccess String
+}
+relationship OneToMany {
+  BngInfo{lineInfo} to LineInfo{bngInfo}
+}
+

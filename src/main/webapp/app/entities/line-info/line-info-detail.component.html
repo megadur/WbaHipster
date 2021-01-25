@@ -1,0 +1,52 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="lineInfo">
+            <h2><span jhiTranslate="wbaHipsterApp.lineInfo.detail.title">Line Info</span> {{ lineInfo.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="wbaHipsterApp.lineInfo.lineId">Line Id</span></dt>
+                <dd>
+                    <span>{{ lineInfo.lineId }}</span>
+                </dd>
+                <dt><span jhiTranslate="wbaHipsterApp.lineInfo.uplinkPort">Uplink Port</span></dt>
+                <dd>
+                    <span>{{ lineInfo.uplinkPort }}</span>
+                </dd>
+                <dt><span jhiTranslate="wbaHipsterApp.lineInfo.ipAddress">Ip Address</span></dt>
+                <dd>
+                    <span>{{ lineInfo.ipAddress }}</span>
+                </dd>
+                <dt><span jhiTranslate="wbaHipsterApp.lineInfo.tsLastQuery">Ts Last Query</span></dt>
+                <dd>
+                    <span>{{ lineInfo.tsLastQuery }}</span>
+                </dd>
+                <dt><span jhiTranslate="wbaHipsterApp.lineInfo.tsLastQuerySuccess">Ts Last Query Success</span></dt>
+                <dd>
+                    <span>{{ lineInfo.tsLastQuerySuccess }}</span>
+                </dd>
+                <dt><span jhiTranslate="wbaHipsterApp.lineInfo.bngInfo">Bng Info</span></dt>
+                <dd>
+                    <div *ngIf="lineInfo.bngInfo">
+                        <a [routerLink]="['/bng-info', lineInfo.bngInfo?.id, 'view']">{{ lineInfo.bngInfo?.id }}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/line-info', lineInfo.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

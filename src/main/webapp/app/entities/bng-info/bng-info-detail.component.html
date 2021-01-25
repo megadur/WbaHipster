@@ -1,0 +1,46 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="bngInfo">
+            <h2><span jhiTranslate="wbaHipsterApp.bngInfo.detail.title">Bng Info</span> {{ bngInfo.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="wbaHipsterApp.bngInfo.endSz">End Sz</span></dt>
+                <dd>
+                    <span>{{ bngInfo.endSz }}</span>
+                </dd>
+                <dt><span jhiTranslate="wbaHipsterApp.bngInfo.lineId">Line Id</span></dt>
+                <dd>
+                    <span>{{ bngInfo.lineId }}</span>
+                </dd>
+                <dt><span jhiTranslate="wbaHipsterApp.bngInfo.portName">Port Name</span></dt>
+                <dd>
+                    <span>{{ bngInfo.portName }}</span>
+                </dd>
+                <dt><span jhiTranslate="wbaHipsterApp.bngInfo.tsLastQuery">Ts Last Query</span></dt>
+                <dd>
+                    <span>{{ bngInfo.tsLastQuery }}</span>
+                </dd>
+                <dt><span jhiTranslate="wbaHipsterApp.bngInfo.tsLastQuerySuccess">Ts Last Query Success</span></dt>
+                <dd>
+                    <span>{{ bngInfo.tsLastQuerySuccess }}</span>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/bng-info', bngInfo.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

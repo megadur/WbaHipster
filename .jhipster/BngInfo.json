@@ -1,0 +1,44 @@
+{
+  "name": "BngInfo",
+  "fields": [
+    {
+      "fieldName": "endSz",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "lineId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "portName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "tsLastQuery",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "tsLastQuerySuccess",
+      "fieldType": "String"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "lineInfo",
+      "otherEntityRelationshipName": "bngInfo",
+      "relationshipName": "lineInfo"
+    }
+  ],
+  "changelogDate": "20210125083949",
+  "entityTableName": "bng_info",
+  "dto": "no",
+  "pagination": "no",
+  "service": "no",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": ["WbaHipster"]
+}

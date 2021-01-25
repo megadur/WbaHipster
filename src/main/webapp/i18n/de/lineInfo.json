@@ -1,0 +1,27 @@
+{
+  "wbaHipsterApp": {
+    "lineInfo": {
+      "home": {
+        "title": "Line Infos",
+        "createLabel": "Line Info erstellen",
+        "createOrEditLabel": "Line Info erstellen oder bearbeiten",
+        "notFound": "No Line Infos found"
+      },
+      "created": "Line Info erstellt mit ID {{ param }}",
+      "updated": "Line Info aktualisiert mit ID {{ param }}",
+      "deleted": "Line Info gelöscht mit ID {{ param }}",
+      "delete": {
+        "question": "Soll Line Info {{ id }} wirklich dauerhaft gelöscht werden?"
+      },
+      "detail": {
+        "title": "Line Info"
+      },
+      "lineId": "Line Id",
+      "uplinkPort": "Uplink Port",
+      "ipAddress": "Ip Address",
+      "tsLastQuery": "Ts Last Query",
+      "tsLastQuerySuccess": "Ts Last Query Success",
+      "bngInfo": "Bng Info"
+    }
+  }
+}

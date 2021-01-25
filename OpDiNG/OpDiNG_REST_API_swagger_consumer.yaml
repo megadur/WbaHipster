@@ -1,0 +1,5010 @@
+swagger: "2.0"
+info:
+  version: 2.24.0
+  title: OpdingRestApiCallbacks
+  description:
+    "This document describes the endpoints and structures on the consumer side, necessary to receive the asynchronous callbacks from the OpDiNG API.\n
+    Note that the 'host' and 'basePath' values are just for illustration. These value will be defined by the consumer."
+  contact:
+    name: Alexander Roock
+    email: alexander.roock@t-systems.com
+  x-api-identifier: tdeu.serviceTest.OpdingRestApiCallbacks.2.24.0
+  x-api-lifecycleState: DRAFT
+  x-api-domain: serviceTest
+  x-api-governanceArea: tdeu
+  x-api-category: ENTERPRISE
+  x-api-application: OpDiNG
+  x-api-repository: net.telekom.tdeu.api.serviceTest.OpdingRestApiCallbacks.0224
+  x-api-dataProtectionClass: DE4
+host: host_on_consumer_side.telekom.de
+basePath: "/consumer_base_path"
+schemes:
+  - https
+tags:
+  - name: Callbacks
+    description: "Callback endpoints for asynchronous callbacks from the OpDiNG API."
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  '/fromOpDiNG/callback':
+    post:
+      summary: "Endpoint for receiving the asynchronous result for a request."
+      description: "This resource path will be added by OpDiNG to the callback url (transmitted with the diagnosis request by the consumer)."
+      operationId: post-callback
+      tags:
+        - Callbacks
+      parameters:
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - in: body
+          name: callbackBody
+          required: true
+          schema:
+            $ref: '#/definitions/callback'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '500':
+          $ref: '#/responses/500'
+
+parameters:
+  X-Correlation-ID:
+    name: X-Correlation-ID
+    in: header
+    required: false
+    description: 'Value for identifying a single transaction across multiple services up to the backend.
+                  Usually set by the originating consumer. It is strongly recommended to generate a UUID,
+                  which has 36 characters.
+                  (Requested by "REST and API Guidelines" of Enterprise Integration - Telekom IT)'
+    type: string
+  X-Request-ID:
+    name: X-Request-ID
+    in: header
+    required: false
+    description: 'Value to identify an individual request across consuming application, middleware
+                  and service provider. It is strongly recommended to generate a UUID, which has
+                  36 characters.
+                  (Requested by "REST and API Guidelines" of Enterprise Integration - Telekom IT)'
+    type: string
+  X-Business-Context:
+    name: X-Business-Context
+    in: header
+    required: false
+    description: 'The business context is a general classification for a larger number of
+                  requests (types) usually set by the originating consumer.
+                  (Requested by "REST and API Guidelines" of Enterprise Integration - Telekom IT)'
+    type: string
+  X-Callback-Correlation-Id:
+    name: X-Callback-Correlation-Id
+    in: header
+    required: true
+    description: 'Value for identifying the callback to an asynchronous request
+                  (request/callback message exchange pattern).
+                  Set by the originating consumer with the request and added to
+                  the asynchronous callback by the provider.'
+    type: string
+    format: uuidv4
+
+definitions:
+  callback:
+    title: callback (body of the request).
+    description: "Consists of the status information (always) and the concrete result data (only if available)."
+    type: object
+    required:
+      - processingStatus
+    properties:
+      processingStatus:
+        $ref: '#/definitions/processingStatus'
+      result:
+        $ref: '#/definitions/result'
+  processingStatus:
+    title: processingStatus
+    description: "Consists of the status itself (always present) and the optional error-object (in case of an error)."
+    type: object
+    required:
+      - status
+    properties:
+      status:
+        type: string
+        enum: [OK, ERROR]
+        description: "The overall status of the callback.\n
+                      * OK - Request could be processed without errors\n
+                        (result object is available within the callback)\n
+                      * ERROR - An error occurred during processing, see error-object for details\n
+                        (the result object might be absent or incomplete)."
+        example: OK
+      error:
+        $ref: '#/definitions/error'
+  error:
+    title: error
+    description: "An error occurred. The error object describes the concrete error situation."
+    type: object
+    required:
+      - message
+    properties:
+      message:
+        type: string
+        description: "Message, describing the current error situation."
+      details:
+        type: string
+        description: "More details regarding the error situation (stack trace, etc.)."
+  evaluationStatus:
+    title: evaluationStatus
+    description: "If it is an evaluated diagnosis this states the overall evaluation result.\n
+                  If not it will be UNEVALUATED. ERROR states that the diagnosis couldn't be executed."
+    type: string
+    enum: [GREEN, YELLOW, RED, UNEVALUATED, ERROR]
+    example: GREEN
+  result:
+    title: result
+    description: "Describes the result part of the callback.\n
+                  Always present if the processingStatus is OK, might be present
+                  if the processingStatus is ERROR (e.g. partial result for grouped diagnoses)."
+    type: object
+    required:
+      - status
+    properties:
+      status:
+        $ref: '#/definitions/evaluationStatus'
+      resultData:
+        $ref: '#/definitions/resultData'
+      subResult:
+        type: array
+        description: "Used for results of a grouped diagnosis. Encapsulates the different results of the diagnoses parts!"
+        items:
+          $ref: '#/definitions/result'
+      statusDetailsList:
+        $ref: '#/definitions/statusDetailsList'
+  resultData:
+    title: resultData
+    description: "Describes the resultData part of a callback, which encloses the diagnosis specific results."
+    type: object
+    properties:
+      readAvailableDiagnosesResultData:
+        $ref: '#/definitions/readAvailableDiagnosesResultData'
+      executeAnIltfSearchtoneResultData:
+        $ref: '#/definitions/executeAnIltfSearchtoneResultData'
+      resetAnResourceResultData:
+        $ref: '#/definitions/resetAnResourceResultData'
+      ruleResultResultData:
+        $ref: '#/definitions/ruleResultResultData'
+      reconfigureAnPortResultData:
+        $ref: '#/definitions/reconfigureAnPortResultData'
+      reconfigurePfcLineAndNetworkServiceProfilesResultData:
+        $ref: '#/definitions/reconfigurePfcLineAndNetworkServiceProfilesResultData'
+      reconfigurePfcAccountWirkbandbreitenResultData:
+        $ref: '#/definitions/reconfigurePfcAccountWirkbandbreitenResultData'
+      readAnDslPortStatusResultData:
+        $ref: '#/definitions/readAnDslPortStatusResultData'
+      changeAnPortResultData:
+        $ref: '#/definitions/changeAnPortResultData'
+      readAnOntAvailabilityResultData:
+        $ref: '#/definitions/readAnOntAvailabilityResultData'
+      readPfcSessionInformationResultData:
+        $ref: '#/definitions/readPfcSessionInformationResultData'
+      executeAnConfigCheckResultData:
+        $ref: '#/definitions/executeAnConfigCheckResultData'
+      executeAnIltfResultData:
+        $ref: '#/definitions/executeAnIltfResultData'
+      readBngAaaStatusResultData:
+        $ref: '#/definitions/readBngAaaStatusResultData'
+      readPfcLineProfileResultData:
+        $ref: '#/definitions/readPfcLineProfileResultData'
+      readAnAncpStatusResultData:
+        $ref: '#/definitions/readAnAncpStatusResultData'
+      readAnPotsPortStatusResultData:
+        $ref: '#/definitions/readAnPotsPortStatusResultData'
+      readAnOntEthStatusResultData:
+        $ref: '#/definitions/readAnOntEthStatusResultData'
+      disconnectPfcUserSessionsResultData:
+        $ref: '#/definitions/disconnectPfcUserSessionsResultData'
+      readCrmtCustomerContractAndLockInformationResultData:
+        $ref: '#/definitions/readCrmtCustomerContractAndLockInformationResultData'
+      readCrmtCustomerContractDataResultData:
+        $ref: '#/definitions/readCrmtCustomerContractDataResultData'
+      executeAnOntRediscoveryResultData:
+        $ref: '#/definitions/executeAnOntRediscoveryResultData'
+      resetAnOntResultData:
+        $ref: '#/definitions/resetAnOntResultData'
+      executeAnLineMeasurementResultData:
+        $ref: '#/definitions/executeAnLineMeasurementResultData'
+      executeAnOntTriggerNewTanResultData:
+        $ref: '#/definitions/executeAnOntTriggerNewTanResultData'
+      executeAnOntChangeResultData:
+        $ref: '#/definitions/executeAnOntChangeResultData'
+      executeAnOntCommissioningResultData:
+        $ref: '#/definitions/executeAnOntCommissioningResultData'
+      executeAnOntCommissioningFinalizeResultData:
+        $ref: '#/definitions/executeAnOntCommissioningFinalizeResultData'
+      getSnapshotIdResultData:
+        $ref: '#/definitions/getSnapshotIdResultData'
+      readImsVoipStatusResultData:
+        $ref: '#/definitions/readImsVoipStatusResultData'
+      readHistoryResultData:
+        $ref: '#/definitions/readHistoryResultData'
+      readAnChangePortListResultData:
+        $ref: '#/definitions/readAnChangePortListResultData'
+      readPfcSubscriberInformationResultData:
+        $ref: '#/definitions/readPfcSubscriberInformationResultData'
+      resetPfcSubscriberLogonLockResultData:
+        $ref: '#/definitions/resetPfcSubscriberLogonLockResultData'
+      readBngInterfaceDiagnosticsOpticsStatusResultData:
+        $ref: '#/definitions/readBngInterfaceDiagnosticsOpticsStatusResultData'
+      executeAnIltfCMResultData:
+        $ref: '#/definitions/executeAnIltfCMResultData'
+      overrulePfcAuthenticationResultData:
+        $ref: '#/definitions/overrulePfcAuthenticationResultData'
+      readAnDslOamStatusTestResultData:
+        $ref: '#/definitions/readAnDslOamStatusTestResultData'
+      readPfcNetworkServiceProfileResultData:
+        $ref: '#/definitions/readPfcNetworkServiceProfileResultData'
+      executeAnIltfDialToneTestResultData:
+        $ref: '#/definitions/executeAnIltfDialToneTestResultData'
+      readBngSubscribersSummaryInterfaceStatusResultData:
+        $ref: '#/definitions/readBngSubscribersSummaryInterfaceStatusResultData'
+      readAnAncpSessionInformation:
+        $ref: '#/definitions/readAnAncpSessionInformationResultData'
+      executeAnIltfCalibrationMeasurementResultData:
+        $ref: '#/definitions/executeAnIltfCalibrationMeasurementResultData'
+      readRpmPerformanceDataResultData:
+        $ref: '#/definitions/readRpmPerformanceDataResultData'
+      readAnFtthOpticalPowerResultData:
+        $ref: '#/definitions/readAnFtthOpticalPowerResultData'
+      readAnFtthOnuInformationResultData:
+        $ref: '#/definitions/readAnFtthOnuInformationResultData'
+      readPfcRouterInfoResultData:
+        $ref: '#/definitions/readPfcRouterInfoResultData'
+      executeRdL3PingRdResultData:
+        $ref: '#/definitions/executeRdL3PingRdResultData'
+      readAnVectoringStatusTestResultData:
+        $ref: '#/definitions/readAnVectoringStatusTestResultData'
+      readRdInventoryDataResultData:
+        $ref: '#/definitions/readRdInventoryDataResultData'
+      firmwareUpdateRdResultData:
+        title: firmwareUpdateRdResultData
+        description: "The result data of remote device firmware update. Returns no further parameters!"
+        type: string
+      reconfigureRdResultData:
+        title: reconfigureRdResultData
+        description: "The result data of remote device reconfiguration. Returns no further parameters!"
+        type: string
+      rebootRdResultData:
+        title: rebootRdResultData
+        description: "The result data of remote device reboot. Returns no further parameters!"
+        type: string
+      executeRdEthLbResultData:
+        $ref: '#/definitions/executeRdEthLbResultData'
+      executeRmdRouterPasswordChangeResultData:
+        $ref: '#/definitions/executeRmdRouterPasswordChangeResultData'
+      executeRmdRouterFirmwareUpdateResultData:
+        $ref: '#/definitions/executeRmdRouterFirmwareUpdateResultData'
+      executeRmdRouterRebootResultData:
+        $ref: '#/definitions/executeRmdRouterRebootResultData'
+      readRmdRouterDataExtendedResultData:
+        $ref: '#/definitions/readRmdRouterDataExtendedResultData'
+      readRmdRouterDataResultData:
+        $ref: '#/definitions/readRmdRouterDataResultData'
+      error:
+        $ref: '#/definitions/resultDataError'
+
+  resultDataError:
+    title: error
+    description: "Error structure with possible sub-error structures."
+    type: object
+    properties:
+      id:
+        type: string
+        description: "Identifier of the error."
+      originator:
+        type: string
+        description: "System / component responsible for the error."
+      message:
+        type: string
+        description: "Concrete error message."
+      causes:
+        type: array
+        description: "List of possible sub errors."
+        items:
+          $ref: '#/definitions/resultDataError'
+      useCase:
+        type: string
+        description: "Technical use case name."
+
+  resetPfcSubscriberLogonLockResultData:
+    title: resetPfcSubscriberLogonLockResultData
+    description: "The result data of the resetPfcSubscriberLogonLock diagnosis. Returns no further parameters!."
+    type: object
+    required:
+      - resultdata
+    properties:
+      resultdata:
+        type: string
+        description: "'OK' if logon lock was successfully reset."
+
+  readAnChangePortListResultData:
+    title: readAnChangePortListResultData
+    description: "The result data of the readAnChangePortList diagnosis."
+    type: object
+    required:
+      - portList
+    properties:
+      portList:
+        $ref: '#/definitions/portList'
+  portList:
+    title: portList
+    description: "List of possible ports."
+    type: object
+    properties:
+      portGroup:
+        type: array
+        items:
+          $ref: '#/definitions/portGroup'
+  portGroup:
+    title: portGroup
+    description: "Describes a single port group (as possible target for the change port)."
+    type: object
+    required:
+      - msanEndSz
+      - slot
+      - subSlot
+      - portNumber
+    properties:
+      msanEndSz:
+        type: string
+        description: "Key to identify an AccessNode (MSAN or DSLAM), EndSz value is provided with '/' symbol as a delimiter."
+        example: "49/30/001/7MC1"
+      slot:
+        type: string
+        description: "Reference to the slot."
+        example: "7"
+      subSlot:
+        type: string
+        description: "Reference to the subslot (if existent)."
+        example: "1"
+      portNumber:
+        $ref: '#/definitions/portNumber'
+  portNumber:
+    title: portNumber
+    description: "The port number(s)."
+    type: object
+    properties:
+      portNumber:
+        type: array
+        items:
+          type: integer
+  readAvailableDiagnosesResultData:
+    title: readAvailableDiagnosesResultData
+    description: "Determines all available diagnostics."
+    type: object
+    required:
+      - functionList
+    properties:
+      functionList:
+        $ref: '#/definitions/functionList'
+  functionList:
+    title: functionList
+    description: "Array of diagnostics."
+    type: object
+    properties:
+      function:
+        type: array
+        items:
+          $ref: '#/definitions/function'
+  function:
+    title: function
+    description: "Represents a single diagnostic element."
+    type: object
+    required:
+      - name
+      - uri
+    properties:
+      name:
+        type: string
+      uri:
+        type: string
+  executeAnIltfSearchtoneResultData:
+    title: executeAnIltfSearchtoneResultData
+    description: "The concrete result data of a searchtone diagnosis (for either starting or stopping the searchtone, or for requesting the status of a running searchtone)."
+    type: object
+    required:
+      - searchToneStatus
+    properties:
+      searchToneStatus:
+        type: string
+        enum: ["ON", "OFF", "NOT_AVAILABLE"]
+        description: "The current status of the searchtone.\n
+                      * ON - Searchtone is switched on\n
+                      * OFF - Searchtone is switched off\n
+                      * NOT_AVAILABLE – Searchtone is not available."
+        example: On
+      remainingTime:
+        type: integer
+        format: int32
+        description: "Remaining run duration for the active search tone in minutes. The value 0 is used to indicate a remaining time that is less than one minute.\n Will only be returned in the case the searchtone status was requested!"
+        example: 10
+  resetAnResourceResultData:
+    title: resetAnResourceResultData
+    description: "The result data of the resetLine diagnosis. Returns no further parameters!"
+    type: string
+  ruleResultResultData:
+    title: ruleResultResultData
+    description: "The result data of the readRuleResults diagnosis."
+    type: object
+    properties:
+      data:
+        $ref: '#/definitions/data'
+  data:
+    title: data
+    description: "The data part of a ruleResult, only available when no error occurred."
+    type: object
+    properties:
+      ruleResult:
+        $ref: '#/definitions/ruleResultList'
+  ruleResultList:
+    title: ruleResultList
+    description: "Array of ruleResult elements."
+    type: array
+    items:
+      $ref: '#/definitions/ruleResult'
+  ruleResult:
+    title: ruleResult
+    description: "Represents a single ruleResult element."
+    type: object
+    required:
+      - additionalInformation
+      - creationTime
+      - evaluated
+      - latestMeasure
+      - lineID
+      - loadOk
+      - ruleID
+      - subRuleResults
+    properties:
+      additionalInformation:
+        $ref: '#/definitions/additionalInformation'
+      creationTime:
+        type: string
+        format: date-time
+        description: "Point in time when the rule was executed."
+        example: "2019-08-15T17:32:28Z"
+      evaluated:
+        type: boolean
+        description: "True, if the underlying rule is fulfilled. Otherwise false."
+      evaluatedElement:
+        $ref: '#/definitions/evaluatedElement'
+      latestMeasure:
+        type: string
+        format: date-time
+        description: "Element, which was evaluated by the rule. E.g. 'DeviceId'"
+        example: "2019-08-15T17:32:28Z"
+      lineID:
+        type: string
+        description: "LineId of the customer line."
+      loadOk:
+        type: boolean
+        description: "True, if all of the load elements of the sub rules were fulfilled."
+      ruleID:
+        type: string
+        description: "Id of the rule."
+      subRuleResults:
+        $ref: '#/definitions/subRuleResults'
+  additionalInformation:
+    title: additionalInformation
+    description: "Wrapper for the list of additionalInformation elements."
+    type: object
+    properties:
+      additionalInformation:
+        $ref: '#/definitions/additionalInformationList'
+  additionalInformationList:
+    title: additionalInformationList
+    description: "Array of additionalInformation elements."
+    type: array
+    items:
+      $ref: '#/definitions/additionalInformationItem'
+  additionalInformationItem:
+    title: additionalInformationItem
+    description: "Represents a single additionalInformation element."
+    type: object
+    required:
+      - informationKey
+      - informationValue
+    properties:
+      informationKey:
+        type: string
+      informationValue:
+        type: string
+  evaluatedElement:
+    title: evaluatedElement
+    description: "Represents an evaluatedElement."
+    type: object
+    required:
+      - elementKey
+      - elementValue
+    properties:
+      elementKey:
+        type: string
+      elementValue:
+        type: string
+  subRuleResults:
+    title: subRuleResults
+    description: "Wrapper for the list of subRuleResult elements."
+    type: object
+    properties:
+      subRuleResult:
+        $ref: '#/definitions/subRuleResultList'
+  subRuleResultList:
+    title: subRuleResultList
+    description: "Array of subRuleResult elements."
+    type: array
+    items:
+      $ref: '#/definitions/subRuleResult'
+  subRuleResult:
+    title: subRuleResult
+    description: "Represents a single subRuleResult element."
+    type: object
+    required:
+      - evaluated
+      - load
+      - subruleID
+    properties:
+      evaluated:
+        type: boolean
+        description: "True, if the underlying subrule is fulfilled. Otherwise false."
+      load:
+        type: integer
+        description: "Indicates what percentage of the measured values are present (relative to the expected number of measurements). 0..100"
+      subruleID:
+        type: string
+        description: "Contains the parent RuleID (10 digits), an underscore, and 2 digits for the subrule number"
+  reconfigureAnPortResultData:
+    title: reconfigureAnPortResultData
+    description: "The result data of the reconfiguration of an AN resource. Returns no further parameters!"
+    type: string
+  reconfigurePfcLineAndNetworkServiceProfilesResultData:
+    title: reconfigurePfcLineAndNetworkServiceProfilesResultData
+    description: "The result data of the reconfiguration of the service profiles. Returns no further parameters!"
+    type: string
+  reconfigurePfcAccountWirkbandbreitenResultData:
+    title: reconfigurePfcAccountWirkbandbreitenResultData
+    description: "The result data of the reconfiguration of the account information. Returns no further parameters!"
+    type: string
+  changeAnPortResultData:
+    title: changeAnPortResultData
+    description: "The result data of the change port diagnosis."
+    type: object
+    properties:
+      targetPortList:
+        $ref: '#/definitions/targetPortList'
+  targetPortList:
+    title: targetPortList
+    description: "List of target port information for each port. In case of bonding up to 4 target ports. In case of non-bonding only one target port."
+    type: object
+    properties:
+      targetPort:
+        type: "array"
+        items:
+          $ref: '#/definitions/targetPort'
+  targetPort:
+    title: targetPort
+    description: "Describes a single target port with it's first-mile- and pe-data."
+    type: object
+    properties:
+      peDataList:
+        $ref: '#/definitions/peDataList'
+      port:
+        $ref: '#/definitions/port'
+      firstMileDataList:
+        $ref: '#/definitions/firstMileDataList'
+  peDataList:
+    title: peDataList
+    description: "List of peripheral devices data for the new port."
+    type: object
+    properties:
+      peData:
+        type: "array"
+        items:
+          $ref: '#/definitions/peData'
+  peData:
+    title: peData
+    description: "Peripheral device (PE) data."
+    type: object
+    properties:
+      asb:
+        type: integer
+        format: int64
+        description: "Anschlussbereich"
+        example: 47
+      onkz:
+        type: integer
+        format: int64
+        description: "Ortsnetzkennzahl"
+        example: 30
+      peNummer:
+        type: string
+        description: "Number of the PE"
+        example: "11205"
+      peZeile1:
+        type: string
+        description: "Information about the PE"
+        example: "PE 11205 PE-Typ PCM11 Herst ANDERE KW/J 0/0"
+      peZeile2:
+        type: string
+        description: "Information about the PE"
+        example: "Zl 11"
+      peZeile3:
+        type: string
+        description: "Information about the PE"
+        example: "BESTAND"
+      peZeile4:
+        type: string
+        description: "Information about the PE"
+      peZeile5:
+        type: string
+        description: "Information about the PE"
+      peZeile6:
+        type: string
+        description: "Information about the PE"
+      peZeile7:
+        type: string
+        description: "Information about the PE"
+      typPe:
+        type: string
+        description: "Type of the PE"
+        example: "PCM11"
+      zweigleitungsNummer:
+        type: integer
+        format: int64
+        description: "Number of the PE branch line; Continuously numbered 'speech channel' on the PE multiplex line"
+        example: 11
+  port:
+    title: port
+    description: "This structure contains information of the new port."
+    type: object
+    properties:
+      msanEndSz:
+        type: string
+        description: "Key to identify an AccessNode (MSAN or DSLAM). EndSz value is provided with '/' symbol as a delimiter: e.G.: 49/30/001/7MC1"
+        example: "49/30/001/7MC1"
+      slot:
+        type: string
+        description: "Number / Name of the slot."
+        example: "9"
+      subSlot:
+        type: string
+        description: "Number / Name of the sub slot.\n
+                      Sub-slot is mandatory if port is located on layer two cards.
+                      Currently configuration of access nodes doesn’t allow layer two cards and therefore sub-slot is optional (not used)."
+        example: "1"
+      portNumber:
+        type: string
+        description: "Number of the port on the line card."
+        example: 17
+  firstMileDataList:
+    title: firstMileDataList
+    description: "The switching data objects of the first mile."
+    type: object
+    properties:
+      firstMileData:
+        type: "array"
+        items:
+          $ref: '#/definitions/firstMileData'
+  firstMileData:
+    title: firstMileData
+    description: "Switching data object."
+    type: object
+    properties:
+      asb:
+        type: string
+        description: "Anschlussbereich"
+        example: "1"
+      onkz:
+        type: string
+        description: "Ortsnetzkennzahl"
+        example: "6044"
+      sequenzNr:
+        type: string
+        description: "Number of sort order"
+        example: "1"
+      pinIncomming:
+        $ref: '#/definitions/pin'
+      pinOutgoing:
+        $ref: '#/definitions/pin'
+  pin:
+    title: pin
+    description: "Pin object for an incoming or outgoing pin."
+    type: object
+    properties:
+      cableType:
+        type: string
+        description: "Type of cable on the pin:\n
+                      * VZK = cable that connects the APL with a KVZ\n
+                      * HK = cable that connects the APL or KVZ with the HVT\n
+                      * QK = cable that connects two KVZ"
+        example: "VZK"
+      reference:
+        type: string
+        description: "Note to the pin. Examples: 'xDSLab', 'DIVan'"
+        example: "xDSLab"
+      designation:
+        type: string
+        description: "Designation of the pin. Examples:\n
+                      * A21.1-17 (located at an APL)\n
+                      * A21-01-17 (located at a KVZ)"
+        example: "A21.1-17"
+      switchingPoint:
+        type: string
+        description: "Specifies the location of the pin:\n
+                      * APL - Termination point of the line, based on customer side\n
+                      * BST - Betriebsstelle\n
+                      * HVT_L - HVT on the side of the line technology\n
+                      * HVT_V - HVT on the side of the switching technology\n
+                      * KVZ - street cabinet, feeder distribution interface, cross-connect box"
+        example: "APL"
+  readAnOntAvailabilityResultData:
+    title: readAnOntAvailabilityResultData
+    description: "The result data of the read ONT availability diagnosis."
+    type: object
+    properties:
+      ontList:
+        $ref: '#/definitions/ontList'
+  ontList:
+    title: ontList
+    description: "List of found ONTs (depends on the type of the request)."
+    type: object
+    properties:
+      device:
+        type: "array"
+        items:
+          $ref: '#/definitions/device'
+  device:
+    title: device
+    description: "Encapsulates the information about a single ONT."
+    type: object
+    properties:
+      customerOnt:
+        type: boolean
+        description: "Exists if the request was made for a specific customer.\n
+                      * true = the current ONT is the customer's ONT\n
+                      * false = the current ONT is not the customer's ONT"
+        example: "true"
+      ontId:
+        type: integer
+        format: int64
+        description: "ID of the ONT within the actual PON."
+        example: "17"
+      actualRunState:
+        type: string
+        enum: ["ONLINE", "OFFLINE", "UNKNOWN"]
+        description: "Actual status of the ONT:\n
+                      * ONLINE\n
+                      * OFFLINE\n
+                      * UNKNOWN"
+        example: "ONLINE"
+      lastDownTime:
+        type: string
+        format: date-time
+        description: "Time when the ONT last went down."
+        example: "2019-10-17T17:38:46Z"
+      lastDownCause:
+        type: string
+        description: "Reason why the ONT last went down."
+        example: "Dying-gasp"
+      lastUpTime:
+        type: string
+        format: date-time
+        description: "ONT's last up time. Only available for the customer ONT!"
+        example: "2019-10-17T17:41:39Z"
+      klsId:
+        type: string
+        description: "ID of the property where the customer line is terminated (KLS-ID)"
+        example: "127008"
+      gfapName:
+        type: string
+        description: "Name of the GfAP the customers ONT is connected to"
+        example: "AP127_1_1"
+
+  readPfcSessionInformationResultData:
+    title: readPfcSessionInformationResultData
+    type: object
+    description: "The result data of the read platform control session information diagnosis."
+    properties:
+      accessProviderNumber:
+        type: string
+        description: "1 to 4 digit long access provider number."
+        example: "0"
+      accountingSessionID:
+        type: string
+        description: "Accounting session id, 1 to 254 character long string."
+        example: "jnpr demux0.3221955503:27640771"
+      ancpDataRateDown:
+        type: integer
+        format: int32
+        description: "Downstream-Bandwidth of the current physical connection AN – RD / HG\n
+                      Value is transmitted via ANCP channel from the AN to the BNG [kbit/sec]"
+        example: "50000"
+      ancpDataRateUp:
+        type: integer
+        format: int32
+        description: "Upstream-Bandwidth of the current physical connection AN – RD / HG\n
+                      Value is transmitted via ANCP channel from the AN to the BNG [kbit/sec]"
+        example: "10000"
+      asb:
+        type: integer
+        format: int32
+        description: "Anschlussbereich"
+        example: "47"
+      authenticationMethod:
+        type: string
+        enum: ["linebased","userbased"]
+        description: "Authentication method, either linebased or user based."
+        example: "linebased"
+      calid:
+        type: string
+        description: "Line ID"
+        example: "DE.DTAG.ABCDEF"
+      circuitID:
+        type: string
+        description: "Circuit ID (up to 32 characters)"
+        example: "B34243332"
+      contextNumber:
+        type: integer
+        format: int64
+        example: "1222223"
+      coreFacingInterface:
+        type: string
+        description: "Transmitted by the BNG: Value of the core facing interface for L2BSA\n
+                      (Layer 2 Bit Stream Access); Min length: 1; Max length: 255"
+      currentSessionDown:
+        type: integer
+        format: int64
+        description: "Downstream-Bandwith of the current session (Layer 3) [kbit/sec]"
+        example: "16384"
+      currentSessionUp:
+        type: integer
+        format: int64
+        description: "Upstream-Bandwith of the current session (Layer 3) [kbit/sec]"
+        example: "1024"
+      currentSocketDown:
+        type: integer
+        format: int64
+        description: "Downstream-Bandwith of the current connection AN – RD / HG (Layer 3) [kbit/sec]"
+        example: "16000"
+      currentSocketUp:
+        type: integer
+        format: int64
+        description: "Upstream-Bandwith of the current connection AN – RD / HG (Layer 3) [kbit/sec]"
+        example: "16000"
+      domainIndex:
+        type: integer
+        format: int32
+        example: "3"
+      iPInfoGroup:
+        $ref: '#/definitions/iPInfoGroup'
+      innerVlanMapID:
+        type: string
+        description: "Transmitted by the BNG: Value of the inner VLAN map id for L2BSA\n
+                      (Layer 2 Bit Stream Access); Min length: 1; Max length: 255"
+      ipVersion:
+        type: integer
+        format: int64
+        description: "IP version information:\n
+                      * 1 = IPv4\n
+                      * 2 = IPv6\n
+                      * 3 = IPv4 und IPv6\n
+                      * 6 = IPv6 mit Anforderung IPv4 und Freigabe IPv4\n
+                      * 7 = IPv4 und IPv6 mit Freigabe IPv4 und Anforderung IPv4"
+        example: "1"
+      klsID:
+        type: string
+        description: "Location ID from the KIO-Server; only digits, max length: 12"
+        example: "27413496"
+      l2CcID:
+        type: string
+        description: "Layer 2 Cross Connect ID; Min length: 1; Max length: 32"
+      locationInfo:
+        $ref: '#/definitions/locationInfo'
+      nasIPAddress:
+        type: string
+        description: "IPv4-Address"
+        example: "192.168.1.1"
+      nasPort:
+        type: integer
+        format: int64
+        example: "621138151"
+      nasPortType:
+        type: integer
+        format: int64
+        example: "34"
+      onkz:
+        type: string
+        description: "Ortsnetzkennzahl; only digits, max length: 7"
+        example: "30"
+      productDown:
+        type: integer
+        format: int32
+        description: "Downstream-Bandwith of the currently booked product (Layer 3) [kbit/sec]"
+        example: "50000"
+      productUp:
+        type: integer
+        format: int32
+        description: "Upstream-Bandwith of the currently booked product (Layer 3) [kbit/sec]"
+        example: "10000"
+      routingInstanceID:
+        type: string
+        description: "Routing instance ID for layer 2 cross connect; Min length: 1; Max length: 32"
+      serviceType:
+        type: string
+        description: "Service type of the Radius-Proxy session."
+      services:
+        $ref: '#/definitions/service'
+      sessionCategory:
+        type: integer
+        format: int32
+        description: "Range of values:\n
+                      * 1 = User-based session at the port (no line-profil)\n
+                      * 2 = Plattform-Default-Session without line-profile\n
+                      * 3 = Line-based Business-Product-Session\n
+                      * 4 = User-based Massenmarkt-Session\n
+                      * 5 = Line-based Massenmarkt-Session\n
+                      * 6 = Incomplete line-based Massenmarkt-Session\n
+                      * 7 = Incomplete line-based Business-Product -Session\n
+                      * 8 = Line-based Default-Session due to inequality of the User-Name\n
+                      * 9 = Line-based Default-Session because reject from the RADIUS server\n
+                      * 10 = Line-based L2BSA-Session"
+        example: "4"
+      sessionStartTime:
+        type: string
+        description: "Timestamp (DateTime) of the session start time (UTC)"
+        example: "2019-09-24T19:22:20Z"
+      subscriberID:
+        type: string
+        description: "The subscriber number by KG 1 else username (Max length: 64)"
+        example: "552107444681"
+      tunnelSessionInfo:
+        $ref: '#/definitions/tunnelSessionInfo'
+      umt:
+        $ref: '#/definitions/umt'
+      userName:
+        type: string
+        description: "User name"
+        example: "002467332427#552107444681#0001@t-online.de "
+      vlanMapID:
+        type: string
+        description: "Transmitted by the BNG: Value of the VLAN map id for L2BSA\n
+                      (Layer 2 Bit Stream Access); Min length: 1; Max length: 255"
+      ongoingNetwServActivation:
+        type: boolean
+        description: "Indicates whether there is currently activation / deactivation of network services."
+        example: "false"
+      userAuthRequired:
+        type: string
+        enum: ["REQUIRED","NOT_REQUIRED"]
+        description: "REQUIRED = Authentication via username/password required\n
+                      NOT_REQUIRED = Authentication via username/password not required"
+        example: "NOT_REQUIRED"
+
+  iPInfoGroup:
+    title: iPInfoGroup
+    type: object
+    properties:
+      delegatedIPv6PrefixGroup:
+        $ref: '#/definitions/iPv6Prefix'
+      framedIPAddress:
+        type: string
+        description: "IPv4-Address"
+        example: "192.168.1.1"
+      framedIPv6PrefixGroup:
+        $ref: '#/definitions/iPv6Prefix'
+
+  iPv6Prefix:
+    title: iPv6Prefix
+    type: object
+    properties:
+      iPv6Prefix:
+        type: string
+        description: "IPv6-Address"
+        example: "A212:1221:B232::"
+      iPv6PrefixLength:
+        type: integer
+        format: int64
+        description: "IPv6 prefix length (1 - 128)"
+        example: "56"
+
+  locationInfo:
+    title: locationInfo
+    type: object
+    properties:
+      city:
+        type: string
+        description: "City, Max length: 50"
+        example: "Altenwalde"
+      civicLocation:
+        type: string
+        description: "Civic location, Max length: 40"
+        example: "Cuxhaven"
+      civicLocationAdd:
+        type: string
+        description: "Additional info to civic location , Max length: 40"
+      countryCode:
+        type: string
+        description: "Country according to ISO 3166. Max length: 2"
+        example: "DE"
+      county:
+        type: string
+        description: "County, Max length: 40"
+        example: "Cuxhaven"
+      latitude:
+        type: integer
+        format: int32
+        description: "Geographical width as an integer, Maximum value (incl.): 900000"
+        example: "538284"
+      latitudeId:
+        type: string
+        enum: ["Nord","Sued"]
+        description: "Latitude ID"
+        example: "Nord"
+      longitude:
+        type: integer
+        format: int32
+        description: "Geographical length as an integer, Maximum value (incl.): 1800000"
+        example: "86636"
+      longitudeId:
+        type: string
+        enum: ["Ost","West"]
+        description: "Longitude ID"
+        example: "Ost"
+      postalCode:
+        type: string
+        description: "Postal code (Postleitzahl), Pattern: [0-9]{1,5}"
+        example: "27478"
+      postalDistrictShort:
+        type: string
+        description: "Max length: 25"
+      stateShort:
+        type: string
+        description: "State (Bundesland), Max length: 3"
+        example: "NI"
+      street:
+        type: string
+        description: "Street, Max length: 50"
+        example: "An der Kreuzkirche"
+      streetNumber:
+        type: string
+        description: "House number without addition, Pattern: [0-9]{1,4}"
+        example: "26"
+      streetNumberAdd:
+        type: string
+        description: "House number addition, Max length: 10"
+        example: "B"
+      streetShort:
+        type: string
+        description: "Street (short), Max length: 25"
+
+  service:
+    title: service
+    type: object
+    properties:
+      bestEffortPolicy:
+        $ref: '#/definitions/policy'
+      dhcpReply:
+        $ref: '#/definitions/dhcpReply'
+      ethp2PList:
+        $ref: '#/definitions/ethp2PList'
+      multicastPolicy:
+        $ref: '#/definitions/policy'
+      networkServiceCount:
+        type: integer
+        format: int64
+        description: "Number of found services."
+        example: "23"
+      ngCoCoList:
+        $ref: '#/definitions/ngCoCoList'
+      policyGroupDomain:
+        type: integer
+        format: int64
+        description: "Policy group (domain)"
+      policyGroupUser:
+        type: integer
+        format: int64
+        description: "Policy group (user)"
+        example: "1300026"
+      qosPolicies:
+        $ref: '#/definitions/qosPolicies'
+      qosTunnelPolicies:
+        $ref: '#/definitions/qosTunnelPolicies'
+      stickyPagePolicy:
+        type: string
+        description: "Stickypage1, Min length: 1, Max length: 128"
+
+  policy:
+    title: policy
+    type: object
+    properties:
+      bandwidthDown:
+        type: integer
+        format: int64
+        description: "Downstream-Bandwidth [kbit/sec]"
+        example: "21996"
+      bandwidthUp:
+        type: integer
+        format: int64
+        description: "Upstream-Bandwidth [kbit/sec]"
+        example: "7432"
+      policyName:
+        type: string
+        description: "Policy name, Max length: 128"
+        example: "qosi_fon_2"
+
+  dhcpReply:
+    title: dhcpReply
+    type: object
+    properties:
+      description:
+        type: string
+        description: "Description, String [0-20]"
+        example: "Desc1"
+      mark:
+        type: integer
+        format: int32
+        description: "Mark"
+        example: "2"
+      policyString:
+        type: string
+        description: "Policy string"
+        example: "dhcprelay(vid=3;access-id=DE.DTAG.ABCDEF;Service-BW=2000)"
+      serviceBWDownL3:
+        type: integer
+        format: int64
+        description: "Downstream-Bandwidth of the DHCP-Relay-Service (Layer 3) [kbit/sec]"
+        example: "10"
+      serviceBWUpL3:
+        type: integer
+        format: int64
+        description: "Upstream-Bandwidth of the DHCP-Relay-Service (Layer 3) [kbit/sec]"
+        example: "10"
+      vlanID:
+        type: integer
+        format: int64
+        description: "VLAN ID (0-4095)"
+        example: "3"
+
+  ethp2PList:
+    title: ethp2PList
+    type: object
+    properties:
+      ethp2P:
+        type: array
+        items:
+          $ref: '#/definitions/ethp2P'
+
+  ethp2P:
+    title: ethp2P
+    type: object
+    properties:
+      accessBwDownl2:
+        type: integer
+        format: int64
+        description: "Downstream-Bandwidth of the AN - RD connection (Layer 2) of specific\n
+                      individual customer's products (Ethernet Point-to-Point) [kbit/sec]"
+      accessBwUpl2:
+        type: integer
+        format: int64
+        description: "Upstream-Bandwidth of the AN - RD connection (Layer 2) of specific\n
+                      individual customer's products (Ethernet Point-to-Point) [kbit/sec]"
+      description:
+        type: string
+        description: "Service description for the billing system, Max length: 20"
+      directAddressing:
+        $ref: '#/definitions/directAddressing'
+      optProfile:
+        type: string
+        description: "Name of an optional specified optimization profile in the BNG, Max length: 20"
+      policyString:
+        type: string
+        description: "Vendor specific string for the service"
+      serviceBWDownL2:
+        type: integer
+        format: int64
+        description: "Downstream-Bandwidth of the service (Layer 2) of specific individual\n
+                      customer's products (Ethernet Point-to-Point) [kbit/sec]"
+        example: "32"
+      serviceBWPercBEDown:
+        type: integer
+        format: int32
+        description: "Percentage of 'Verkehrsklasse Best Effort' on service bandwidth down.\n
+                      Min value: 0, Max value: 100"
+        example: "32"
+      serviceBWPercBEUp:
+        type: integer
+        format: int32
+        description: "Percentage of 'Verkehrsklasse Best Effort' on service bandwidth up.\n
+                      Min value: 0, Max value: 100"
+        example: "17"
+      serviceBWPercLDDown:
+        type: integer
+        format: int32
+        description: "Percentage of 'Verkehrsklasse Low Delay' on service bandwidth down.\n
+                      Min value: 0, Max value: 100"
+        example: "32"
+      serviceBWPercLDUp:
+        type: integer
+        format: int32
+        description: "Percentage of 'Verkehrsklasse Low Delay' on service bandwidth up.\n
+                      Min value: 0, Max value: 100"
+        example: "17"
+      serviceBWPercLLDown:
+        type: integer
+        format: int32
+        description: "Percentage of 'Verkehrsklasse Low Loss' on service bandwidth down.\n
+                      Min value: 0, Max value: 100"
+        example: "32"
+      serviceBWPercLLUp:
+        type: integer
+        format: int32
+        description: "Percentage of 'Verkehrsklasse Low Loss' on service bandwidth up.\n
+                      Min value: 0, Max value: 100"
+        example: "17"
+      serviceBWPercVoiceDown:
+        type: integer
+        format: int32
+        description: "Percentage of 'Verkehrsklasse Voice' on service bandwidth down.\n
+                      Min value: 0, Max value: 100"
+        example: "32"
+      serviceBWPercVoiceUp:
+        type: integer
+        format: int32
+        description: "Percentage of 'Verkehrsklasse Voice' on service bandwidth up.\n
+                      Min value: 0, Max value: 100"
+        example: "17"
+      serviceBWUpL2:
+        type: integer
+        format: int64
+        description: "Upstream-Bandwidth of the service (Layer 2) of specific individual\n
+                      customer's products (Ethernet Point-to-Point) [kbit/sec]"
+        example: "17"
+      vlanID:
+        type: integer
+        format: int32
+        description: "VLAN ID, Min value: 0, Max value: 4095"
+        example: "3"
+
+  directAddressing:
+    title: directAddressing
+    type: object
+    properties:
+      sourceId:
+        type: string
+        description: "ID of the source of the pseudowire for direct addressing.\n
+                      Max length: 32"
+      targetId:
+        type: string
+        description: "ID of the target of the pseudowire for direct addressing.\n
+                      Max length: 32"
+
+  ngCoCoList:
+    title: ngCoCoList
+    type: object
+    properties:
+      ngCoCo:
+        type: array
+        items:
+          $ref: '#/definitions/ngCoCo'
+
+  ngCoCo:
+    title: ngCoCo
+    type: object
+    properties:
+      accessBWDownL2:
+        type: integer
+        format: int64
+        description: "Downstream-Bandwidth of the AN - RD connection (Layer 2) of specific\n
+                      individual customer's products (e.g. DeutschlandLAN) [kbit/sec]"
+      accessBWUpL2:
+        type: integer
+        format: int64
+        description: "Upstream-Bandwidth of the AN - RD connection (Layer 2) of specific\n
+                      individual customer's products (e.g. DeutschlandLAN) [kbit/sec]"
+      description:
+        type: string
+        description: "Service description for the billing system, Max length: 20"
+      iPv4LoopbackAddress:
+        type: string
+        description: "IPv4-Address"
+        example: "192.168.1.1"
+      iPv4SegmentList:
+        $ref: '#/definitions/iPv4SegmentList'
+      iPv4TransitSubnet:
+        type: string
+        description: "IPv4-Subnet"
+        example: "192.168.1.1/30"
+      iPv6LoopbackAddress:
+        type: string
+        description: "IPv6-Address"
+        example: "2003:1:2:3::1"
+      iPv6SegmentList:
+        $ref: '#/definitions/iPv6SegmentList'
+      optProfile:
+        type: string
+        description: "Name of an optional specified optimization profile in the BNG\n
+                      Max length: 20"
+      policyString:
+        type: string
+        description: "Vendor specific string for the service"
+        example: "ngcoco(vid=101;Service-BW=3000;v4A=10.0.1.0/28,10.0.2.0/30,10.0.3.0/24;Rtv4=66,,33;\n
+                  v6A=2003:4:A::/48,2003:4:B::/64;Rtv6=,66;v4Tra=1.2.3.0/30;Lo0v4=1.2.3.4;\n
+                  Lo0v6=2003:1:2:3::1;BW-LL=128;BW-LD=256;BW-VO=512;BW-BE=768;optpro=opt1)"
+      serviceBWDownL3:
+        type: integer
+        format: int64
+        description: "Downstream-Bandwidth of the service (Layer 3) of specific\n
+                      individual customer's products (e.g. DeutschlandLAN) [kbit/sec]"
+      serviceBWPercBEDown:
+        type: integer
+        format: int64
+        description: "Percentage of 'Verkehrsklasse Best Effort' on service bandwidth down.\n
+                      Min value: 0, Max value: 100"
+        example: "32"
+      serviceBWPercBEUp:
+        type: integer
+        format: int64
+        description: "Percentage of 'Verkehrsklasse Best Effort' on service bandwidth up.\n
+                      Min value: 0, Max value: 100"
+        example: "17"
+      serviceBWPercLDDown:
+        type: integer
+        format: int64
+        description: "Percentage of 'Verkehrsklasse Low Delay' on service bandwidth down.\n
+                      Min value: 0, Max value: 100"
+        example: "32"
+      serviceBWPercLDUp:
+        type: integer
+        format: int64
+        description: "Percentage of 'Verkehrsklasse Low Delay' on service bandwidth up.\n
+                      Min value: 0, Max value: 100"
+        example: "17"
+      serviceBWPercLLDown:
+        type: integer
+        format: int64
+        description: "Percentage of 'Verkehrsklasse Low Loss' on service bandwidth down.\n
+                      Min value: 0, Max value: 100"
+        example: "32"
+      serviceBWPercLLUp:
+        type: integer
+        format: int64
+        description: "Percentage of 'Verkehrsklasse Low Loss' on service bandwidth up.\n
+                      Min value: 0, Max value: 100"
+        example: "17"
+      serviceBWPercVoiceDown:
+        type: integer
+        format: int64
+        description: "Percentage of 'Verkehrsklasse Voice' on service bandwidth down.\n
+                      Min value: 0, Max value: 100"
+        example: "32"
+      serviceBWPercVoiceUp:
+        type: integer
+        format: int64
+        description: "Percentage of 'Verkehrsklasse Voice' on service bandwidth up.\n
+                      Min value: 0, Max value: 100"
+        example: "17"
+      serviceBWUpL3:
+        type: integer
+        format: int64
+        description: "Upstream-Bandwidth of the service (Layer 3) of specific\n
+                      individual customer's products (e.g. DeutschlandLAN) [kbit/sec]"
+      vlanID:
+        type: integer
+        format: int64
+        description: "VLAN ID, Min value: 0, Max value: 4095"
+        example: "101"
+
+  iPv4SegmentList:
+    title: iPv4SegmentList
+    type: object
+    properties:
+      iPv4Segment:
+        type: array
+        items:
+          $ref: '#/definitions/iPv4Segment'
+
+  iPv4Segment:
+    title: iPv4Segment
+    type: object
+    properties:
+      routeTag:
+        type: integer
+        format: int32
+        description: "Route tag"
+        example: "66"
+      subnet:
+        type: string
+        description: "IPv4-Subnet value."
+        example: "193.14.12.234/28"
+
+  iPv6SegmentList:
+    title: iPv6SegmentList
+    type: object
+    properties:
+      iPv6Segment:
+        type: array
+        items:
+          $ref: '#/definitions/iPv6Segment'
+
+  iPv6Segment:
+    title: iPv6Segment
+    type: object
+    properties:
+      routeTag:
+        type: integer
+        format: int32
+        description: "Route tag"
+        example: "66"
+      subnet:
+        type: string
+        description: "IPv6-Subnet value."
+        example: "2003:00F8:10A0::1/48"
+
+  qosPolicies:
+    title: qosPolicies
+    type: object
+    properties:
+      policy:
+        type: array
+        items:
+          $ref: '#/definitions/policy'
+
+  qosTunnelPolicies:
+    title: qosTunnelPolicies
+    type: object
+    properties:
+      policy:
+        type: array
+        items:
+          $ref: '#/definitions/policy'
+
+  tunnelSessionInfo:
+    title: tunnelSessionInfo
+    type: object
+    properties:
+      acctTunnelConnection:
+        type: string
+        description: "Unique accounting ID for a tunnel connection, Max length: 255"
+      ancpDataRateDown:
+        type: integer
+        format: int32
+        description: "Downstream-Bandwidth of the current physical connection AN – RD / HG\n
+                      on a tunneled connection (L2TP tunneled session, session information\n
+                      from tunnel source); the value is transmitted via ANCP-Channel from\n
+                      AN to BNG [kbit/sec]"
+      ancpDataRateUp:
+        type: integer
+        format: int32
+        description: "Upstream-Bandwidth of the current physical connection AN – RD / HG\n
+                      on a tunneled connection (L2TP tunneled session, session information\n
+                      from tunnel source); the value is transmitted via ANCP-Channel from\n
+                      AN to BNG [kbit/sec]"
+      contextNumber:
+        type: integer
+        format: int32
+        description: "RADIUS-Proxy context number"
+      currentSessionDown:
+        type: integer
+        format: int32
+        description: "Downstream-Bandwidth of the current session on a tunneled connection\n
+                      (L2TP tunneled session, session information from tunnel source) [kbit/sec]"
+      currentSessionUp:
+        type: integer
+        format: int32
+        description: "Upstream-Bandwidth of the current session on a tunneled connection\n
+                      (L2TP tunneled session, session information from tunnel source) [kbit/sec]"
+      currentSocketDown:
+        type: integer
+        format: int32
+        description: "Downstream-Bandwidth of the current connection AN - RD / HG on a tunneled connection\n
+                      (L2TP tunneled session, session information from tunnel source) [kbit/sec]"
+      currentSocketUp:
+        type: integer
+        format: int32
+        description: "Upstream-Bandwidth of the current connection AN - RD / HG on a tunneled connection\n
+                      (L2TP tunneled session, session information from tunnel source) [kbit/sec]"
+      logicalAccessID:
+        type: string
+        description: "Unique generic identifier for the unique identification of the connection.\n
+                      The format varies according to the type of connection.\n
+                      For connections, who can be uniquely identified by the NAS-Port, the following format is used:\n
+                      P:[NAS-IP-Address]|[NAS-Port-Type]|[NAS-Port]\n
+                      For Connections, which is based on the line-ID, the following format is used:\n
+                      A:[CALID]\n
+                      Max length: 255"
+      nasIPAddress:
+        type: string
+        description: "IPv4-Address"
+        example: "192.168.1.1"
+      tunnelClientEndpoint:
+        type: string
+        description: "Identifies the tunnel starting point for a tunneled connection\n
+                      Max length: 255"
+      tunnelServerEndpoint:
+        type: string
+        description: "Identifies the tunnel endpoint at a tunneled connection\n
+                      Max length: 255"
+
+  umt:
+    title: umt
+    type: object
+    properties:
+      externalThrottleProfileID:
+        type: integer
+        format: int32
+        description: "External throttle profile ID.\n
+                      Must be defined for the domain of the session."
+      internalThrottleProfileID:
+        type: integer
+        format: int32
+        description: "Internal throttle profile ID.\n
+                      Must be defined for the domain of the session."
+      ocsData:
+        $ref: '#/definitions/ocsData'
+      ocsSubscriptionID:
+        type: string
+        description: "Unique subscription ID for bandwidth quota in OCS\n
+                      Max length: 32"
+      throttleDownL3:
+        type: integer
+        format: int64
+        description: "Throttle bandwidth down (layer 3) [kbit/sec]"
+      throttleUpL3:
+        type: integer
+        format: int64
+        description: "Throttle bandwidth up (layer 3) [kbit/sec]"
+      umtPhase:
+        type: integer
+        format: int32
+        description: "Range of values:\n
+                      * 1 = unthrottled phase (volume block for unthrottled\n
+                            phase received from OCS and service enabled)\n
+                      * 2 = Transition phase (currently no UMT service active,\n
+                            waiting for OCS communication, communication with OCS\n
+                            is running, or CoA activation is pending)\n
+                      * 3 = throttled phase (volume block for throttled phase\n
+                            received from OCS and service enabled)\n
+                      * 4 = disabled due to errors (currently no UMT service is active\n
+                            due to errors in OCS communication or BNG errors)"
+        example: "1"
+
+  ocsData:
+    title: ocsData
+    type: object
+    properties:
+      activeRatingGroup:
+        type: string
+        description: "ID of an OCS rating group."
+      grantedCcTime:
+        type: integer
+        format: int64
+        description: "Number of seconds before the billing interval expires."
+      grantedTotalOctets:
+        type: integer
+        format: int64
+        description: "Number of granted or used octets."
+      ocsSessionID:
+        type: string
+        description: "Diameter session ID of the OCS reservation with active UMT accounting."
+      validityTime:
+        type: integer
+        format: int64
+        description: "Number of seconds that the OCS reservation is valid."
+
+  executeAnConfigCheckResultData:
+    title: executeAnConfigCheckResultData
+    type: object
+    properties:
+      actualValues:
+        $ref: '#/definitions/actualValues'
+      assiaValues:
+        $ref: '#/definitions/assiaValues'
+      requestValues:
+        $ref: '#/definitions/requestValues'
+      status:
+        $ref: '#/definitions/responseParameterStatus'
+
+  responseParameterStatus:
+    type: string
+    enum: ["unevaluated","green","yellow","red","error","unfinished","paused"]
+    description: "The overall config check result status:\n
+                        * red = configuration differs\n
+                        * green = configuration as expected."
+
+  actualValues:
+    title: actualValues
+    description: "List of all current values that differ to the expected config values."
+    type: object
+    properties:
+      nameValueAttribute:
+        type: array
+        items:
+          $ref: '#/definitions/nameValueAttribute'
+
+  nameValueAttribute:
+    title: nameValueAttribute
+    description: "Name and value of a configured item."
+    type: object
+    properties:
+      name:
+        type: string
+        description: "Name of the configured item."
+      value:
+        type: string
+        description: "Value of the configured item."
+
+  assiaValues:
+    title: assiaValues
+    description: "A structure with ASSIA profile information for a subscriber line."
+    type: object
+    properties:
+      creationTime:
+        type: string
+        description: "Creation time when the profile information was computed. UNIX UTC+00:00"
+      optimizationProfiles:
+        $ref: '#/definitions/optimizationProfiles'
+      optimizationStatus:
+        type: string
+        description: "ASSIA Optimization status. Is an enum object which has values:\n
+                      * ‘DSLE is finished’\n
+                      * ‘DSLE is currently in optimization’\n
+                      * ‘Has not been changed by DSLE in the last 30 days’."
+      optimizationStatusDetail:
+        $ref: '#/definitions/optimizationStatusDetail'
+      optimizationTime:
+        type: string
+        description: "Finish time of the optimization run. UNIX UTC+00:00"
+      shortName:
+        type: string
+        description: "The port identifier of the requested line as:n
+                      NE/rack/shelf/slot/subslot/port\n
+                      (e.g. 49_2361_346_7MA1_1/1/1/0/25)"
+
+  optimizationProfiles:
+    title: optimizationProfiles
+    description: "Structure, that describes an ASSIA profile-set."
+    type: object
+    properties:
+      optimizationProfile:
+        type: array
+        items:
+          $ref: '#/definitions/optimizationProfile'
+
+  optimizationProfile:
+    title: optimizationProfile
+    description: "Structure, that describes an ASSIA sub-profile."
+    type: object
+    properties:
+      profileType:
+        type: string
+        description: "Type of the profile, e.g.: 'DS_DATA_RATE_PROFILE'"
+      profileValue:
+        type: string
+        description: "Value of the profile, e.g.: 'DATA_MIN001152_MAX063680'"
+
+  optimizationStatusDetail:
+    title: optimizationStatusDetail
+    description: "Structure describing details about optimization status."
+    type: object
+    properties:
+      optimizationCode:
+        type: integer
+        format: int32
+        description: "Status code of the detailed result of a completed optimization run."
+      optimizationResultTextDe:
+        type: string
+        description: "Description of the detailed optimization result, German language."
+      optimizationResultTextEn:
+        type: string
+        description: "Description of the detailed optimization result, English language."
+
+  requestValues:
+    title: requestValues
+    description: "List of all expected config values (target configuration)"
+    type: object
+    properties:
+      nameValueAttribute:
+        type: array
+        items:
+          $ref: '#/definitions/nameValueAttribute'
+
+  statusDetailsList:
+    title: statusDetailsList
+    description: "Wrapper for the list of statusDetail elements."
+    type: object
+    properties:
+      statusDetails:
+        $ref: '#/definitions/statusDetails'
+  statusDetails:
+    title: statusDetails
+    description: "This encapsulates the evaluation results of the diagnosis.\n
+                  It is only present if the diagnosis is an evaluated one.\n
+                  It might also be present although the diagnosis run into an error."
+    type: array
+    items:
+      $ref: '#/definitions/statusDetailsItem'
+  statusDetailsItem:
+    title: statusDetailsItem
+    description: "Structure for one evaluated parameter or a parent of an evaluated substructure (in that case only the name and the statusDetailsList will be present)."
+    type: object
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        description: "Name of the evaluated parameter."
+      label:
+        type: string
+        description: "Optional label for this parameter."
+      value:
+        type: string
+        description: "Value of the evaluated parameter."
+      status:
+        $ref: '#/definitions/evaluationStatus'
+      unit:
+        type: string
+        description: "Unit of the current (evaluated) parameter."
+      description:
+        type: string
+        description: "Further description on the evaluation result."
+      statusDetailsList:
+        $ref: '#/definitions/statusDetailsList'
+
+  readAnDslPortStatusResultData:
+    title: readAnDslPortStatusResultData
+    description: "The result data of the readDslPortStatus diagnosis."
+    type: object
+    properties:
+      dslLinkState:
+        type: string
+        description: "The admin state of the DSL port."
+      dslOnlineState:
+        type: string
+        description: "The operational state of the DSL port."
+
+  executeAnIltfResultData:
+    title: executeAnIltfResultData
+    description: "The result data of the ILTF diagnosis."
+    type: object
+    properties:
+      metallicAccess:
+        $ref: '#/definitions/metallicAccess'
+      iltfWires:
+        $ref: '#/definitions/iltfWires'
+
+  metallicAccess:
+    title: metallicAccess
+    description: "The metallic access object, consisting of vendor- and chipset-data."
+    type: object
+    properties:
+      chipSetData:
+        $ref: '#/definitions/chipSetData'
+      vendorData:
+        $ref: '#/definitions/vendorData'
+
+  chipSetData:
+    title: chipSetData
+    description: "Chipset information of the iltf measurement chipset."
+    type: object
+    properties:
+      chipDevice:
+        type: string
+        description: "Version of the measurement chipset."
+        example: "MLT16Version 1.1"
+      chipSetVendorId:
+        type: string
+        description: "Vendor of the measurement chipset."
+        example: "LANTIQ"
+      chipSoftwareVersion:
+        type: string
+        description: "Firmware version of the measurement chipset."
+        example: "1. 8. 0. 5. 1 2. 6. 3. 0"
+
+  vendorData:
+    title: vendorData
+    description: "Vendor information of the linecard."
+    type: object
+    properties:
+      boardVersion:
+        type: string
+        description: "Version of the linecard."
+        example: "11321126F1-B"
+      softwareVersion:
+        type: string
+        description: "Softwareversion of the linecard."
+        example: "she_sr5.6_iu-vdsl48bwd1y_o.106"
+
+  iltfWires:
+    title: iltfWires
+    description: "List of wires (in case of bonding up to 4 subelements)."
+    type: object
+    properties:
+      iltfWire:
+        type: array
+        items:
+          $ref: '#/definitions/iltfWire'
+
+  iltfWire:
+    title: iltfWire
+    type: object
+    properties:
+      id:
+        type: string
+        description: "Identifier of line within the bonding group."
+      portId:
+        type: string
+        description: "Absolute port id."
+        example: "4"
+      diagnosticMeasurements:
+        $ref: '#/definitions/diagnosticMeasurements'
+      errorReason:
+        $ref: '#/definitions/iltfErrorReason'
+      iltfAnalysis:
+        $ref: '#/definitions/iltfAnalysis'
+      peDataList:
+        $ref: '#/definitions/peDataList'
+
+  diagnosticMeasurements:
+    title: diagnosticMeasurements
+    description: "Diagnostic test results for the current copper pair."
+    type: object
+    properties:
+      capacitances:
+        $ref: '#/definitions/capacitances'
+      capacitancesUncorrected:
+        $ref: '#/definitions/capacitances'
+      conductanceMeasurements:
+        $ref: '#/definitions/conductanceMeasurements'
+      correctionValues:
+        $ref: '#/definitions/correctionValues'
+      dcCurrentMeasurements:
+        $ref: '#/definitions/dcCurrentMeasurements'
+      measurementVoltages:
+        $ref: '#/definitions/measurementVoltages'
+      nonLinearTerminations:
+        $ref: '#/definitions/nonLinearTerminations'
+      resistances:
+        $ref: '#/definitions/resistances'
+      susceptanceMeasurements:
+        $ref: '#/definitions/susceptanceMeasurements'
+      voltagesAndFrequencies:
+        $ref: '#/definitions/voltagesAndFrequencies'
+
+  capacitances:
+    title: capacitances
+    description: "Capacitances measurement results"
+    type: object
+    properties:
+      aLegEarthCapacitance:
+        type: number
+        format: double
+        description: "Capacitance between a leg and ground\n
+                      Hint: The value is calculated from the measured value minus the correction value. [nF]"
+        example: "15.0"
+      aLegEarthOnboardCapacitance:
+        type: number
+        format: double
+        description: "Capacitance between a leg and ground on the port card without external switching-on unit. [nF]"
+        example: "0.0"
+      abCapacitance:
+        type: number
+        format: double
+        description: "Capacitance between a leg and b leg. [nF]"
+        example: "28.0"
+      abOnboardCapacitance:
+        type: number
+        format: double
+        description: "Capacitance between a leg and b leg on the port card without external switching-on unit. [nF]"
+        example: "27.0"
+      bLegEarthCapacitance:
+        type: number
+        format: double
+        description: "Capacitance between b leg and ground\n
+                      Hint: The value is calculated from the measured value minus the correction value. [nF]"
+        example: "15.0"
+      bLegEarthOnboardCapacitance:
+        type: number
+        format: double
+        description: "Capacitance between b leg and ground on the port card without external switching-on unit. [nF]"
+        example: "0.0"
+
+  conductanceMeasurements:
+    title: conductanceMeasurements
+    description: "Conductance  measurement results"
+    type: object
+    properties:
+      aLegEarthConductance:
+        type: number
+        format: double
+        description: "Conductances a leg against ground. [μS]"
+        example: "0.8"
+      abConductance:
+        type: number
+        format: double
+        description: "Conductances a leg against b leg. [μS]"
+        example: "1.0"
+      bLegEarthConductance:
+        type: number
+        format: double
+        description: "Conductances b leg against ground. [μS]"
+        example: "0.7"
+
+  correctionValues:
+    title: correctionValues
+    description: "Correction values of the calibration measurement."
+    type: object
+    properties:
+      aLegGround:
+        type: number
+        format: double
+        description: "The determined correction value for capacitance between a leg and ground.\n
+                      In case of bonding it'll be transferred for each wire. [nF]"
+        example: "0.0"
+      bLegGround:
+        type: number
+        format: double
+        description: "The determined correction value for capacitance between b leg and ground.\n
+                      In case of bonding it'll be transferred for each wire. [nF]"
+        example: "0.0"
+
+  dcCurrentMeasurements:
+    title: dcCurrentMeasurements
+    description: "All current measurements."
+    type: object
+    properties:
+      aLegEarthCurrent:
+        type: number
+        format: double
+        description: "DC from a leg to ground at the resistance measurement [μA]"
+        example: "34.0"
+      abCurrent:
+        type: number
+        format: double
+        description: "DC from a leg to b leg at the resistance measurement [μA]"
+        example: "90.0"
+      bLegEarthCurrent:
+        type: number
+        format: double
+        description: "DC from b leg to ground at the resistance measurement [μA]"
+        example: "34.0"
+      baCurrent:
+        type: number
+        format: double
+        description: "DC from b leg to a leg at the resistance measurement [μA]"
+        example: "29.0"
+
+  measurementVoltages:
+    title: measurementVoltages
+    description: "All voltage measurement results."
+    type: object
+    properties:
+      acALegEarth:
+        type: number
+        format: double
+        description: "AC measurement voltage for the capacitance\n
+                      measurement a leg against ground. [V]"
+        example: "7.0"
+      acAb:
+        type: number
+        format: double
+        description: "AC measurement voltage for the capacitance\n
+                      measurement a leg against b leg. [V]"
+        example: "6.0"
+      acBLegEarth:
+        type: number
+        format: double
+        description: "AC measurement voltage for the capacitance\n
+                      measurement b leg against ground. [V]"
+        example: "7.0"
+      dcALegEarth:
+        type: number
+        format: double
+        description: "DC measurement voltage for the resistance measurement\n
+                      a leg against ground effective on the access line. [V]"
+        example: "49.8"
+      dcAb:
+        type: number
+        format: double
+        description: "DC measurement voltage for the resistance measurement a leg (positive)\n
+                      against b leg (negative) effective on the access line. [V]"
+        example: "42.9"
+      dcBLegEarth:
+        type: number
+        format: double
+        description: "DC measurement voltage for the resistance measurement\n
+                      b leg against ground effective on the access line. [V]"
+        example: "49.8"
+      dcBa:
+        type: number
+        format: double
+        description: "DC measurement voltage for the resistance measurement b leg (positive)\n
+                      against a leg (negative) effective on the access line. [V]"
+        example: "46.1"
+      testFrequency:
+        type: number
+        format: double
+        description: "Frequency of the AC voltage for the capacity measurement. [Hz]"
+
+
+  nonLinearTerminations:
+    title: nonLinearTerminations
+    description: "Nonlinear terminations (as a placeholder for the measurement\n
+                  results of the electronic ringer and galvanic signature)."
+    type: object
+    properties:
+      ringerResistance:
+        type: number
+        format: double
+        description: "Resistance of the electronic ringer. [Ω]"
+        example: "82071.0"
+      signatureCapacitance:
+        type: number
+        format: double
+        description: "Signature capacitance. [nF]"
+        example: "541.0"
+      zenerResistance:
+        type: number
+        format: double
+        description: "Zener resistance. [Ω]"
+      zenerVoltage:
+        type: number
+        format: double
+        description: "Zener voltage. [V]"
+
+  resistances:
+    title: resistances
+    description: "All resistance measurements."
+    type: object
+    properties:
+      aLegEarthResistance:
+        type: number
+        format: double
+        description: "Resistance between a leg and ground. [Ω]"
+        example: "1.0E7"
+      abResistance:
+        type: number
+        format: double
+        description: "Resistance between a leg and b leg. [Ω]"
+        example: "473042.0"
+      bLegEarthResistance:
+        type: number
+        format: double
+        description: "Resistance between b leg and ground. [Ω]"
+        example: "1.0E7"
+      baResistance:
+        type: number
+        format: double
+        description: "Resistance between b leg and a leg. [Ω]"
+        example: "1.0E7"
+
+  susceptanceMeasurements:
+    title: susceptanceMeasurements
+    description: "All susceptance measurement results."
+    type: object
+    properties:
+      aLegEarthSusceptance:
+        type: number
+        format: double
+        description: "Susceptance a leg against ground. [μS]"
+        example: "2.4"
+      abSusceptance:
+        type: number
+        format: double
+        description: "Susceptance a leg against b leg. [μS]"
+        example: "8.6"
+      bLegEarthSusceptance:
+        type: number
+        format: double
+        description: "Susceptance b leg against Ground. [μS]"
+        example: "2.4"
+
+  voltagesAndFrequencies:
+    title: voltagesAndFrequencies
+    description: "All extraneous voltages measurement results."
+    type: object
+    properties:
+      acALegEarthFreq:
+        type: number
+        format: double
+        description: "Frequency of the extraneous AC voltage a leg against ground. [Hz]"
+      acALegEarthVoltage:
+        type: number
+        format: double
+        description: "Extraneous AC voltage a leg against ground. [V]"
+        example: "0.1"
+      acAbFreq:
+        type: number
+        format: double
+        description: "Frequency of the extraneous AC voltage a leg against b leg. [Hz]"
+      acAbVoltage:
+        type: number
+        format: double
+        description: "Extraneous AC voltage a leg against b leg. [V]"
+        example: "0.0"
+      acBLegEarthFreq:
+        type: number
+        format: double
+        description: "Frequency of the extraneous AC voltage b leg against ground. [Hz]"
+      acBLegEarthVoltage:
+        type: number
+        format: double
+        description: "Extraneous AC voltage b leg against ground. [V]"
+        example: "0.1"
+      dcALegEarthVoltage:
+        type: number
+        format: double
+        description: "Extraneous DC voltage a leg against ground. [V]"
+        example: "-0.1"
+      dcAbVoltage:
+        type: number
+        format: double
+        description: "Extraneous DC voltage a leg against b leg. [V]"
+        example: "0.1"
+      dcBLegEarthVoltage:
+        type: number
+        format: double
+        description: "Extraneous DC voltage b leg against ground. [V]"
+        example: "-0.2"
+
+  iltfErrorReason:
+    title: iltfErrorReason
+    type: object
+    properties:
+      busyReason:
+        type: string
+        description: "Describes the concrete reason for not executing an ILTF diagnosis due to busy chipset."
+      currentBusyPort:
+        type: string
+        description: "Number of the port on which an ILTF diagnosis is currently running."
+
+  iltfAnalysis:
+    title: iltfAnalysis
+    type: object
+    properties:
+      iltfHazardousVoltage:
+        type: integer
+        format: int32
+        description: "Indication if detected voltage is hazardous for persons or not (at AC U > 50 V, at DC U > 120 V)\n
+                      * 0 = No harzardous voltage detected\n
+                      * 1 = Harzardous voltage detected"
+        example: "0"
+      iltfPpa:
+        type: integer
+        format: int32
+        description: "Result of passive test termination (Test voltage > 40 V assumed)\n
+                      * 1 = ppa (PPA detected; R a/b 350000..520000 Ω;  R b/a > 2000000 Ω)\n
+                      * 2 = ppa_invers (PPA detected but a/b leg are interchanged; R a/b > 2000000 Ω; R b/a 350000..520000 Ω)\n
+                      * 3 = ppa_not_detected (PPA not detected; R a/b, R b/a are not in the defined range)\n
+                      * 4 = analysis_not_available (No measurement available)"
+        example: "3"
+      iltfTerminationCapacitiv:
+        type: integer
+        format: int32
+        description: "Detection of end device capacitance (Termination capacitivity > 50 nF identified)\n
+                      * 0 = False (end device capacitance not detected)\n
+                      * 1 = True (end device capacitance detected)"
+        example: "1"
+      iltfTerminationRinger:
+        type: integer
+        format: int32
+        description: "Detection of remote electronical ringer (Electronical ringer identified)\n
+                      * 0 = False (electronical ringer not detected)\n
+                      * 1 = True (electronical ringer detected)"
+        example: "0"
+      iltfTerminationRoh:
+        type: integer
+        format: int32
+        description: "Detection of receiver off-hook (Receiver off-hook identified)\n
+                      * 0 = False (receiver off-hook not detected)\n
+                      * 1 = True (receiver off-hook detected)"
+        example: "0"
+      iltfTerminationSignature:
+        type: integer
+        format: int32
+        description: "Detection of galvanic signature (Termination signature identified)\n
+                      * 0 = False (galvanic signature not detected)\n
+                      * 1 = True (galvanic signature detected)"
+        example: "1"
+
+  readBngAaaStatusResultData:
+    title: readBngAaaStatusResultData
+    description: "The result data of the read BNG AAA status diagnosis.\n
+                  Note: Unfortunately we have no further information on the meaning of
+                  the individual return parameters."
+    type: object
+    properties:
+      radiusServerAttributes:
+        $ref: '#/definitions/radiusServerAttributes'
+      testStatus:
+        type: string
+        description: "Authentication Deny"
+
+  radiusServerAttributes:
+    title: radiusServerAttributes
+    type: object
+    properties:
+      radiusServerAttribute:
+        type: array
+        items:
+          $ref: '#/definitions/radiusServerAttribute'
+
+  radiusServerAttribute:
+    title: radiusServerAttribute
+    type: object
+    properties:
+      acctInterimInterval:
+        type: string
+      acctSessionID:
+        type: string
+      acctType:
+        type: string
+      agentRemoteId:
+        type: string
+      cHAPPassword:
+        type: string
+      chargeableUserIdentity:
+        type: string
+      classAttribute:
+        type: string
+      clientIPAddress:
+        type: string
+      clientIPNetmask:
+        type: string
+      clientIPv6Address:
+        type: string
+      clientIPv6Mask:
+        type: string
+      delegatedIPv6Pool:
+        type: string
+      delegatedIPv6Prefix:
+        type: string
+      egressPolicyName:
+        type: string
+      egressStatistics:
+        type: string
+      filterId:
+        type: string
+      framedIPv6Pool:
+        type: string
+      framedIPv6Prefix:
+        type: string
+      framedInterfaceId:
+        type: string
+      framedIpRouteTag:
+        type: string
+      framedMTU:
+        type: string
+      framedPool:
+        type: string
+      framedProtocol:
+        type: string
+      framedRoute:
+        type: string
+      iGMP:
+        type: string
+      iGMPAccessGroupName:
+        type: string
+      iGMPAccessSourceGroupName:
+        type: string
+      iGMPImmediateLeave:
+        type: string
+      iGMPVersion:
+        type: string
+      iPv6EgressPolicyName:
+        type: string
+      iPv6IngressPolicyName:
+        type: string
+      ignoreDFBit:
+        type: string
+      ingressPolicyName:
+        type: string
+      ingressStatistics:
+        type: string
+      loginIPv6Host:
+        type: string
+      mLDAccessGroupName:
+        type: string
+      mLDAccessSourceGroupName:
+        type: string
+      mLDImmediateLeave:
+        type: string
+      mLDVersion:
+        type: string
+      macAddress:
+        type: string
+      nASPort:
+        type: string
+      nASPortId:
+        type: string
+      nASPortType:
+        type: string
+      nDRAIPv6Prefix:
+        type: string
+      primaryDNSIPAddress:
+        type: string
+      primaryDNSIPv6Address:
+        type: string
+      primaryWINSIPAddress:
+        type: string
+      redirectVRName:
+        type: string
+      replyMessage:
+        type: string
+      secondaryDNSIPAddress:
+        type: string
+      secondaryDNSIPv6Address:
+        type: string
+      secondaryWINSIPAddress:
+        type: string
+      serviceBundle:
+        type: string
+      serviceName1:
+        type: string
+      serviceName2:
+        type: string
+      serviceType:
+        type: string
+      userName:
+        type: string
+      userPassword:
+        type: string
+      virtualRouterName:
+        type: string
+
+  readPfcLineProfileResultData:
+    title: readPfcLineProfileResultData
+    description: "The result data (line profile information) from the readLineProfile diagnosis."
+    type: object
+    properties:
+      accessNetworkType:
+        type: string
+        description: "First Mile Protocol\n
+                      Max length: 16"
+        example: "ETHERNET"
+      accessType:
+        type: string
+        description: "Technology in the access node, on which the line is connected.\n
+                      Max length: 16"
+        example: "VDSL"
+      authMethod:
+        type: integer
+        format: int32
+        description: "String encoded Enum for the authentication method.\n
+                      * 0 = User-Name und Passwort (Default)\n
+                      * 1 = Calid"
+        example: "0"
+      federationPartner:
+        type: string
+        description: "Name of the federation partner.\n
+                      Max length: 32"
+        example: "t-online.de"
+      klsId:
+        type: string
+        description: "KIO location ID (string encoded number).\n
+                      Max length: 12"
+        example: "27436456"
+      l2CcID:
+        type: string
+        description: "Cross Connection ID for a L2-BSA product.\n
+                      Max length: 32"
+      ppDownL3:
+        type: string
+        description: "Downstream-Bandwidth of the product (Layer 3) [kbit/sec]"
+        example: "364"
+      ppUpL3:
+        type: string
+        description: "Upstream-Bandwidth of the product (Layer 3) [kbit/sec]"
+        example: "13312"
+      providerID:
+        type: string
+        description: "Provider ID (string encoded number).\n
+                      Max length: 4"
+        example: "0000"
+      ramMaxDownL2:
+        type: integer
+        format: int32
+        description: "Maximum physical downstream-Bandwidth (Layer 2) [kbit/sec]"
+        example: "1233"
+      ramMaxUpL2:
+        type: integer
+        format: int32
+        description: "Maximum physical upstream-Bandwidth (Layer 2) [kbit/sec]"
+        example: "1122"
+      ramMinDownL2:
+        type: integer
+        format: int32
+        description: "Minimum physical downstream-Bandwidth (Layer 2) [kbit/sec]"
+        example: "716"
+      ramMinKPDownL2:
+        type: integer
+        format: int32
+        description: "Minimum configured guaranteed downstream-Bandwidth (Layer 2) [kbit/sec]"
+        example: "364"
+      ramMinKPUpL2:
+        type: integer
+        format: int32
+        description: "Minimum configured guaranteed upstream-Bandwidth (Layer 2) [kbit/sec]"
+        example: "13312"
+      ramMinUpL2:
+        type: integer
+        format: int32
+        description: "Minimum physical upstream-Bandwidth (Layer 2) [kbit/sec]"
+        example: "364"
+      substitutionDomain:
+        type: string
+        description: "Replacement domain for the use of line-based connections by VIP of customer group 3.\n
+                      Max length: 32"
+      validFrom:
+        type: string
+        description: "Valid from (Timestamp)\n
+                      format: YYYYMMDDHHmmss"
+        example: "20191201125147"
+
+  readAnAncpStatusResultData:
+    title: readAnAncpStatusResultData
+    description: "The result data of the read ANCP status diagnosis."
+    type: object
+    properties:
+      ancpSessionState:
+        type: string
+        enum: ["red", "green"]
+        description: "The status of the ANCP connection between the access node and the BNG:\n
+                      * red - inactive\n
+                      * green - active"
+        example: "green"
+      cVlanId:
+        type: integer
+        format: int32
+      dslLinkState:
+        type: string
+        enum: ["red", "green"]
+        description: "The status of the customer port on the access node:\n
+                      * red - down\n
+                      * green - up"
+        example: "green"
+      dslOnlineState:
+        type: string
+        enum: ["red", "green"]
+        description: "The online status of the line (customer modem to access node):\n
+                      * red - offline (not synchronised)\n
+                      * green - online (synchronised)"
+        example: "green"
+
+  readAnPotsPortStatusResultData:
+    title: readAnPotsPortStatusResultData
+    description: "The result data of the read POTS port status diagnosis."
+    type: object
+    properties:
+      potsPortStatus:
+        $ref: '#/definitions/potsPortStatus'
+
+  potsPortStatus:
+    title: potsPortStatus
+    description: "POTS port status object."
+    type: object
+    properties:
+      sipPortState:
+        type: string
+        enum: ["P0_NotConfigured","P1_Idle","P2_OutgoingCall","P2_1_DialingEnd","P3_IncomingCall","P4_Communication","P4_1_Hold1","P4_2_Hold2","P4_3_Service","P4_4_Conference","P5_1_ClearRequest1","P5_2_ClearRequest2","P5_3_ClearRequest3","P6_PortLocked","P7_TestMode"]
+        description: "Signaling state of the sip port."
+      vendorExtensions:
+        $ref: '#/definitions/vendorExtensions'
+
+  vendorExtensions:
+    title: vendorExtensions
+    description: "Encapsulates the vendor specific POTS port status parameters."
+    type: object
+    properties:
+      adtranSipPortAdminState:
+        $ref: '#/definitions/potsAdminStatus'
+      adtranSipPortOperState:
+        type: string
+        enum: ["Down","Busy","Idle","Testing","Fault"]
+        description: "Operational status of the SIP port."
+      adtranSipPortVoipRegisterStatus:
+        type: string
+        enum: ["Registered","Unregistered"]
+        description: "Registration state of the sip instance."
+      adtranVgwAdminStatus:
+        $ref: '#/definitions/potsAdminStatus'
+      adtranVgwOperStatus:
+        $ref: '#/definitions/potsOperStatus'
+      aluSipTerminationAdminStatus:
+        $ref: '#/definitions/potsOperStatus'
+      aluSipTerminationOpStatDownReason:
+        type: string
+        enum: [NONE,PHYSICAL_FAILURE,REGISTERING,REGISTRATION_FAILURE]
+        description: "Operational state down reason."
+      aluSipTerminationOperStatus:
+        $ref: '#/definitions/potsOperStatus'
+      aluSipUaApAdminStatus:
+        $ref: '#/definitions/potsOperStatus'
+      aluSipUaApOperStatus:
+        $ref: '#/definitions/potsOperStatus'
+      aluSipUserAgentAdminStatus:
+        $ref: '#/definitions/potsOperStatus'
+
+  potsAdminStatus:
+    type: string
+    enum: ["Locked","Unlocked","Testing"]
+    description: "Admin state of the SIP port."
+  potsOperStatus:
+    type: string
+    enum: ["Up","Down","Unknown"]
+    description: "Operational state."
+
+  readAnOntEthStatusResultData:
+    title: readAnOntEthStatusResultData
+    description: "The result data of the read ONT Ethernet status diagnosis."
+    type: object
+    properties:
+      duplexMode:
+        type: string
+        description: "The duplex mode of the port, e.g.:\n
+                      * Half\n
+                      * Full\n
+                      * AutoNegotiation"
+        example: "AutoNegotiation"
+      negotiateMode:
+        type: string
+        enum: ["Enabled","Disabled"]
+        description: "The negotiation mode of the port:\n
+                      * Enabled\n
+                      * Disabled"
+        example: "Enabled"
+      onlineState:
+        type: string
+        enum: ["Online","Offline"]
+        description: "The ONT Ethernet port state:\n
+                      * Online\n
+                      * Offline"
+        example: "Online"
+      transmissionRate:
+        type: string
+        description: "Transmission rate of the port, e.g.:\n
+                      * 10M\n
+                      * 100M\n
+                      * 1000M\n
+                      * AutoNegotiation"
+        example: "1000M"
+
+  disconnectPfcUserSessionsResultData:
+    title: disconnectPfcUserSessionsResultData
+    type: object
+    description: "The result data of the disconnect pfc user sessions resolution."
+    properties:
+      sessionList:
+        $ref: '#/definitions/sessionList'
+
+  sessionList:
+    title: sessionList
+    type: object
+    description: "List of all found sessions for the user."
+    properties:
+      session:
+        type: array
+        items:
+          $ref: '#/definitions/session'
+
+  session:
+    title: session
+    type: object
+    description: "Structure representing a single session."
+    properties:
+      contextNumber:
+        type: integer
+        format: int64
+        description: "Context number in the session context of the RADIUS proxy."
+      delegatedIPv6PrefixGroup:
+        $ref: '#/definitions/iPv6Prefix'
+      framedIPAddress:
+        type: string
+        description: "IPv4-Address."
+      framedIPv6PrefixGroup:
+        $ref: '#/definitions/iPv6Prefix'
+      nasIPAddress:
+        type: string
+        description: "IPv4-Address."
+
+  readCrmtCustomerContractDataResultData:
+    title: readCrmtCustomerContractDataResultData
+    description: "The result data of the readCrmtCustomerContractData diagnosis."
+    type: object
+    properties:
+      dkkLock:
+        type: boolean
+        description: "DKK-lock (Inkassosperre) is valid for all access contracts of one customer.\n
+                      This lock type can also exist if no other contracts are found. Values: \n
+                      * true = DKK-lock is active for this customer\n
+                      * false = no active DKK-lock"
+        example: "true"
+      contractList:
+        $ref: '#/definitions/contractList'
+      customer:
+        $ref: '#/definitions/customer'
+      hints:
+        $ref: '#/definitions/hints'
+
+  readCrmtCustomerContractAndLockInformationResultData:
+    title: readCrmtCustomerContractAndLockInformationResultData
+    description: "The result data of the readCrmtCustomerContractAndLockInformation diagnosis."
+    type: object
+    properties:
+      dkkLock:
+        type: boolean
+        description: "DKK-lock (Inkassosperre) is valid for all access contracts of one customer.\n
+                      This lock type can also exist if no other contracts are found. Values: \n
+                      * true = DKK-lock is active for this customer\n
+                      * false = no active DKK-lock"
+        example: "true"
+      contractList:
+        $ref: '#/definitions/reducedContractList'
+      hints:
+        $ref: '#/definitions/hints'
+
+  reducedContractList:
+    title: reducedContractList
+    description: "List of found contracts for the customer."
+    type: object
+    properties:
+      contract:
+        type: array
+        items:
+          $ref: '#/definitions/reducedContract'
+
+  contractList:
+    title: contractList
+    description: "List of found contracts for the customer."
+    type: object
+    properties:
+      contract:
+        type: array
+        items:
+          $ref: '#/definitions/contract'
+
+  customer:
+    title: customer
+    description: "Information on the customer."
+    type: object
+    properties:
+      city:
+        type: string
+        description: "Place of residence - City."
+      country:
+        type: string
+        description: "Place of residence - Country."
+      countryCode:
+        type: string
+        description: "Place of residence - Country Code."
+        example: "DE"
+      firstName:
+        type: string
+        description: "First name"
+      houseNumber:
+        type: string
+        description: "Place of residence - House number."
+      houseNumberAddition:
+        type: string
+        description: "Place of residence - Addition to house number."
+        example: "b"
+      lastName:
+        type: string
+        description: "Last name"
+      postalCode:
+        type: string
+        description: "Place of residence - Postal code."
+      street:
+        type: string
+        description: "Place of residence - Street."
+
+  reducedContract:
+    title: reducedContract
+    description: "A single customer's contract."
+    type: object
+    properties:
+      activeLockList:
+        $ref: '#/definitions/activeLockList'
+      name:
+        type: string
+        description: "Name of the booked access contract."
+        example: "MagentaZuhause M mit TV Plus DSL"
+      materialNumber:
+        type: string
+        description: "PRIMA Plus material number of the access contract."
+        example: "89846014"
+      tlnNr:
+        type: string
+        description: "Teilnehmernummer: This is a special subscriber number, which represents a T-Online access
+                      contract. The Teilnehmernummer has been formerly named T-Online ID. This number can have
+                      one to 12 numeric digits.\n\n
+                      Important: The four digits MitbenutzerID is no longer in use.  -> ignore"
+        example: "531208443682"
+
+  contract:
+    title: contract
+    description: "A single customer's contract."
+    type: object
+    properties:
+      activeLockList:
+        $ref: '#/definitions/activeLockList'
+      name:
+        type: string
+        description: "Name of the booked access contract."
+        example: "MagentaZuhause M mit TV Plus DSL"
+      materialNumber:
+        type: string
+        description: "PRIMA Plus material number of the access contract."
+        example: "89846014"
+      tlnNr:
+        type: string
+        description: "Teilnehmernummer: This is a special subscriber number, which represents a T-Online access
+                      contract. The Teilnehmernummer has been formerly named T-Online ID. This number can have
+                      one to 12 numeric digits.\n\n
+                      Important: The four digits MitbenutzerID is no longer in use."
+        example: "531208443682"
+      city:
+        type: string
+        description: "Place of service provision – City."
+      country:
+        type: string
+        description: "Place of service provision – Country."
+      countryCode:
+        type: string
+        description: "Place of service provision – Country Code."
+        example: "DE"
+      firstName:
+        type: string
+        description: "First name of the contract holder."
+      houseNumber:
+        type: string
+        description: "Place of service provision – House number."
+      houseNumberAddition:
+        type: string
+        description: "Place of service provision – Addition to house number."
+        example: "b"
+      lastName:
+        type: string
+        description: "Last name of the contract holder."
+      postalCode:
+        type: string
+        description: "Place of service provision – Postal code."
+      street:
+        type: string
+        description: "Place of service provision – Street."
+
+  activeLockList:
+    title: activeLockList
+    description: "This list contains a the names of all found active Lock Types for this contract."
+    type: object
+    properties:
+      activeLock:
+        type: array
+        items:
+          type: string
+          description: "Name of a found active lock type."
+
+  hints:
+    title: hints
+    description: "This list could transport hints. These hints are information which are not an error
+                  but maybe important for the interface consumer."
+    type: object
+    properties:
+      hint:
+        type: array
+        items:
+          type: string
+          description: "Hint for the service consumer."
+
+  executeAnOntRediscoveryResultData:
+    title: executeAnOntRediscoveryResultData
+    description: "The result data of the rediscovery diagnosis."
+    type: object
+    properties:
+      resultCode:
+        type: integer
+        description: "0 = OK - The OLT was successfully put into rediscovery mode for the specified ONT-ID."
+        format: int32
+
+  resetAnOntResultData:
+    title: resetAnOntResultData
+    description: "The result data of the resetAnOnt diagnosis."
+    type: object
+    properties:
+      resultCode:
+        type: integer
+        description: "0 = OK - The ONT-Reset was successful."
+        format: int32
+
+  executeAnLineMeasurementResultData:
+    title: executeAnLineMeasurementResultData
+    description: "The result data of the executeAnLineMeasurement diagnosis."
+    type: object
+    properties:
+      wires:
+        $ref: '#/definitions/wires'
+
+  wires:
+    title: wires
+    description: "List of wires (In case of bonding up to 4 subelements)."
+    type: object
+    properties:
+      wire:
+        type: array
+        items:
+          $ref: '#/definitions/wire'
+
+  wire:
+    title: wire
+    description: "Represents a single wire. Complex element with subelements."
+    type: object
+    properties:
+      id:
+        type: string
+        description: "Identifier of line within the bonding group."
+      portId:
+        type: string
+        description: "Absolut portId."
+        example: "4"
+      dSLLine:
+        $ref: '#/definitions/dSLLine'
+      dSLChannel:
+        $ref: '#/definitions/dSLChannel'
+      sDSL:
+        $ref: '#/definitions/sDSL'
+
+  dSLLine:
+    title: dSLLine
+    description: "Measurement parameters of a DSL Line PTP.\n
+                  DSL line PTP refers to ADSL and VDSL ports only."
+    type: object
+    properties:
+      actualPowerSpectrumDensity:
+        $ref: '#/definitions/dUStreamWithUnit'
+      aRPPacketsDroppedDueToDynamicARPInspection:
+        type: integer
+        description: "ARP Packets dropped due to Dynamic ARP Inspection (DAIdr)."
+        format: int64
+      attainableRate:
+        $ref: '#/definitions/attainableRateStream'
+      attenuation:
+        $ref: '#/definitions/dUStreamWithUnit'
+      bandList:
+        $ref: '#/definitions/lMBandList'
+      iPPacketsDroppedDueToAntispoofing:
+        type: integer
+        description: "IP Packets dropped due to Antispoofing (ASPOOFdr)."
+        format: int64
+      lineSignalAttenuation:
+        $ref: '#/definitions/dUStreamWithUnit'
+      loopLength:
+        $ref: '#/definitions/loopLength'
+      outputPower:
+        $ref: '#/definitions/dUStreamWithUnit'
+      snrMgn:
+        $ref: '#/definitions/dUStreamWithUnit'
+
+
+
+  dUStreamLong:
+    title: dUStreamLong
+    type: object
+    properties:
+      downstream:
+        type: integer
+        description: "Downstream value."
+        format: int64
+      upstream:
+        type: integer
+        description: "Upstream value."
+        format: int64
+  dUStreamWithUnit:
+    title: dUStreamWithUnit
+    type: object
+    properties:
+      downstream:
+        type: number
+        description: "Downstream value."
+        format: double
+      upstream:
+        type: number
+        description: "Upstream value."
+        format: double
+      unit:
+        type: string
+        description: "Physical unit of the measurement value."
+
+  dUStreamLongWithUnit:
+    title: dUStreamLongWithUnit
+    type: object
+    properties:
+      downstream:
+        type: integer
+        description: "Downstream value."
+        format: int64
+      upstream:
+        type: integer
+        description: "Upstream value."
+        format: int64
+      unit:
+        type: string
+        description: "Physical unit of the measurement value."
+
+  attainableRateStream:
+    title: attainableRateStream
+    description: "Maximum currently attainable data rate measurements."
+    type: object
+    properties:
+      downstream:
+        type: integer
+        description: "Downstream value."
+        format: int32
+      upstream:
+        type: integer
+        description: "Upstream value."
+        format: int32
+      unit:
+        type: string
+        description: "Physical unit of the measurement value."
+        example: "kbps"
+
+  lMBandList:
+    title: lMBandList
+    description: "List of the dsl bands."
+    type: object
+    properties:
+      band:
+        type: array
+        items:
+          $ref: '#/definitions/lMBand'
+
+  lMBand:
+    title: lMBand
+    description: "Represents a single dsl band with all of it's parameters."
+    type: object
+    properties:
+      id:
+        type: string
+        description: "Identifier of the band."
+        example: "0"
+      lineAttenuation:
+        $ref: '#/definitions/dUStreamWithUnit'
+      maximumAttainableRate:
+        $ref: '#/definitions/dUStreamWithUnit'
+      noiseMargin:
+        $ref: '#/definitions/dUStreamWithUnit'
+      signalAttenuation:
+        $ref: '#/definitions/dUStreamWithUnit'
+
+  loopLength:
+    title: loopLength
+    description: "Loop length measurements."
+    type: object
+    properties:
+      estimate:
+        type: number
+        description: "Estimated loop length."
+        format: double
+      unit:
+        type: string
+        description: "Physical unit of estimated loop length measurements."
+        example: "dB"
+
+  dSLChannel:
+    title: dSLChannel
+    description: "Measurement parameter of a DSL channel at a DSL port.\n
+                  The term DSL channel at a DSL port refers to ADSL and VDSL only."
+    type: object
+    properties:
+      actualCellCounter:
+        $ref: '#/definitions/dUStreamLong'
+      actualHECErrorCounter:
+        $ref: '#/definitions/dUStreamLong'
+      actualInpRein:
+        $ref: '#/definitions/dUStreamWithUnit'
+      actualNetDataRate:
+        $ref: '#/definitions/dUStreamLongWithUnit'
+      crcBlockLength:
+        $ref: '#/definitions/dUStreamLong'
+      currentImpulsNoiseProtection:
+        type: number
+        description: "Actual impuls noise protection."
+        format: double
+      currentInterleaverBlockLength:
+        type: integer
+        description: "Actual interleaver block length."
+        format: int64
+      currentInterleaverDepth:
+        type: integer
+        description: "Actual interleaver depth."
+        format: int64
+      currentLatencyPath:
+        type: integer
+        description: "Actual latency path."
+        format: int64
+      currentNoOfBitsPerSymbol:
+        type: number
+        description: "Actual number of bits per symbol."
+        format: double
+      currentReedSolomonRedundancyBytes:
+        type: number
+        description: "Actual Reed-Solomon redundancy bytes."
+        format: double
+      dataRate:
+        $ref: '#/definitions/dataRate'
+      eSCounter:
+        $ref: '#/definitions/dUStreamLong'
+      farEndImpulseNoiseProtection:
+        type: number
+        description: "Actual far end impulse noise protection."
+        format: double
+      framesCounter:
+        $ref: '#/definitions/framesCounter'
+      interleaveDelay:
+        $ref: '#/definitions/dUStreamWithUnit'
+      maxFastFEC:
+        $ref: '#/definitions/dUStreamWithUnit'
+      rtxDtuCount:
+        $ref: '#/definitions/rtxDtuCount'
+      targetSlowBurst:
+        $ref: '#/definitions/dUStreamWithUnit'
+
+  dataRate:
+    title: dataRate
+    description: "All data rate measurement results."
+    type: object
+    properties:
+      downstream:
+        $ref: '#/definitions/cPRate'
+      upstream:
+        $ref: '#/definitions/cPRate'
+      unit:
+        type: string
+        description: "Physical unit of data rate measurements."
+        example: "kbps"
+  cPRate:
+    title: cPRate
+    type: object
+    properties:
+      currentRate:
+        type: integer
+        description: "Current data rate."
+        format: int64
+      previousRate:
+        type: integer
+        description: "Previous data rate."
+        format: int64
+
+  framesCounter:
+    title: framesCounter
+    description: "Frame counter measurements."
+    type: object
+    properties:
+      downstream:
+        $ref: '#/definitions/actual'
+      upstream:
+        $ref: '#/definitions/actual'
+  actual:
+    title: actual
+    type: object
+    properties:
+      actual:
+        type: number
+        description: "Actual frame counter."
+        format: double
+      actualDiscarded:
+        type: number
+        description: "Actual discarded frame counter."
+        format: double
+
+  rtxDtuCount:
+    title: rtxDtuCount
+    description: "RTX DTU count Measurements."
+    type: object
+    properties:
+      downstream:
+        $ref: '#/definitions/rcu'
+      upstream:
+        $ref: '#/definitions/rcu'
+  rcu:
+    title: rcu
+    type: object
+    properties:
+      corrected:
+        type: number
+        description: "RTX corrected DTU count."
+        format: double
+      retransmission:
+        type: number
+        description: "RTX retransmission DTU count."
+        format: double
+      uncorrected:
+        type: number
+        description: "RTX uncorrected DTU count."
+        format: double
+
+  sDSL:
+    title: sDSL
+    description: "Measurement parameters of an SDSL Port."
+    type: object
+    properties:
+      actualCellCounter:
+        $ref: '#/definitions/dUStreamLong'
+      actualHECErrorCounter:
+        $ref: '#/definitions/dUStreamLong'
+      attenuation:
+        $ref: '#/definitions/nCSide'
+      attenuation_Reg1:
+        $ref: '#/definitions/nCSide'
+      attenuation_Reg2:
+        $ref: '#/definitions/nCSide'
+      currentPBO:
+        $ref: '#/definitions/nCSide'
+      dataRate:
+        $ref: '#/definitions/sDSLDataRate'
+      eSCounter:
+        $ref: '#/definitions/dUStreamLong'
+      snrMgn:
+        $ref: '#/definitions/nCSide'
+      snrMgn_Reg1:
+        $ref: '#/definitions/nCSide'
+      snrMgn_Reg2:
+        $ref: '#/definitions/nCSide'
+
+  nCSide:
+    title: nCSide
+    type: object
+    properties:
+      customerSide:
+        type: number
+        description: "Value on the customer side."
+        format: double
+      networkSide:
+        type: number
+        description: "Value on the network side."
+        format: double
+      unit:
+        type: string
+        description: "Physical unit of the measurement value."
+
+  sDSLDataRate:
+    title: sDSLDataRate
+    description: "Actual transmission rate (Tx rate) measurements."
+    type: object
+    properties:
+      transmissionRate:
+        type: integer
+        description: "Actual transmission rate (Tx rate)."
+        format: int64
+      unit:
+        type: string
+        description: "Physical unit of actual transmission rate (Tx rate) measurements."
+        example: "kbps"
+
+  executeAnOntTriggerNewTanResultData:
+    title: executeAnOntTriggerNewTanResultData
+    description: "The result data of the OntTriggerNewTan diagnosis. Returns no further parameters!"
+    type: string
+
+  executeAnOntChangeResultData:
+    title: executeAnOntChangeResultData
+    description: "The result data of the OntChange diagnosis. Returns no further parameters!"
+    type: string
+
+  executeAnOntCommissioningResultData:
+    title: executeAnOntCommissioningResultData
+    description: "The result data of the OntCommissioning diagnosis. Returns no further parameters!"
+    type: string
+
+  executeAnOntCommissioningFinalizeResultData:
+    title: executeAnOntCommissioningFinalizeResultData
+    description: "The result data of the OntCommissioningTestAndFinalize diagnosis. Returns no further parameters!"
+    type: string
+
+  getSnapshotIdResultData:
+    title: getSnapshotIdResultData
+    description: "The result data of getSnapshotId."
+    type: object
+    properties:
+      snapshotID:
+        type: string
+        description: "The ID correlated to the saved snapshotData; Max length: 50"
+
+  readHistoryResultData:
+    title: readHistoryResultData
+    description: "The result data of the readHistory usecase."
+    type: object
+    properties:
+      historyList:
+        $ref: '#/definitions/historyList'
+
+  historyList:
+    title: historyList
+    description: "List of running or past diagnoses."
+    type: "array"
+    items:
+      $ref: '#/definitions/historyEntry'
+
+  historyEntry:
+    title: historyEntry
+    description: "History list entry, each representing a single executed diagnosis."
+    type: object
+    properties:
+      name:
+        type: string
+        description: "Name of the diagnosis (OpDiNG technical name)."
+        example: "READ_AN_ANCP_STATUS"
+      groupId:
+        type: string
+        description: "Group-Id (marks related diagnoses and correction functions to group these into a session).\n
+                      Grouping diagnoses is only possible via OpDiNG UI."
+      guiId:
+        type: string
+        description: "OpDiNG internal order id of the executed diagnosis."
+      guiLink:
+        type: string
+        description: "Link to the detailed results of the diagnosis (OpDiNG-GUI)."
+      startTime:
+        type: string
+        description: "Start time from diagnostic or correction function."
+      endTime:
+        type: string
+        description: "End time from diagnostic or correction function.\n
+                      The end time is not supplied if the diagnosis or correction function\n
+                      is not finished yet. In this case the resultState is 'Unknown' and the\n
+                      executionState is 'Running'."
+      resultState:
+        type: string
+        description: "Result state of the evaluation of the diagnosis, either\n
+                      * 'unevaluated' = the diagnosis is unevaluated\n
+                      * 'green' = the diagnosis is evaluated, no problems found\n
+                      * 'yellow' = the diagnosis is evaluated, minor problems found\n
+                      * 'red' = the diagnosis is evaluated, significant problems found. Customer service is most likely disrupted.\n
+                      * 'error' = a technical error occurred during execution of the diagnosis."
+        example: "green"
+      executionState:
+        type: string
+        description: "Execution state, either\n
+                      * 'Ready' = finished without errors (see resultState for information regarding the result evaluation)\n
+                      * 'Running' = still running\n
+                      * 'Error' = finished with technical error or timeout."
+        example: "Ready"
+      usedCIDescriptor:
+        $ref: '#/definitions/usedCIDescriptor'
+
+  usedCIDescriptor:
+    title: usedCIDescriptor
+    description: "Used CI descriptor"
+    type: object
+    properties:
+      configItemType:
+        type: string
+        description: "The type of the configItem."
+        example: "Subscription"
+      localConfigItemId:
+        type: string
+        description: "Local config item ID. The identifier of the configItem in the source\n
+                      inventory, e.g. 'keyA' of the subscription."
+      ngssmDomain:
+        type: string
+        description: "The domain of the configItem, e.g. 'smk'."
+
+  readPfcSubscriberInformationResultData:
+    title: readPfcSubscriberInformationResultData
+    description: "The result data of the readPfcSubscriberInformation diagnosis."
+    type: object
+    properties:
+      umt:
+        $ref: '#/definitions/umtRdq'
+      msisdn:
+        type: string
+        description: "Mobile Station Integrated Services Digital Network Number (MSISDN):
+                      This number is the central key for the subscriber-related data in the LTE-network.\n
+                      For Hybrid Access voice products, the MSISDN of an LTE subscriber is assigned to a
+                      user of the Access platform.\n
+                      Max length: 20"
+      tlnnr:
+        type: string
+        description: "Teilnehmernummer: This is a special subscriber number, which represents a T-Online access
+                      contract. The Teilnehmernummer has been formerly named T-Online ID.\n
+                      Format: 1 - 12 numeric digits"
+      asskeng:
+        type: string
+        description: "Line identity of the subscriber (Anschlusskennung)."
+      userAuthRequired:
+        type: string
+        enum: ["Required", "Not_Required"]
+        description: "Required = Authentication via username/password required\n
+                      Not_Required = Authentication via username/password not required"
+      mfzg:
+        type: string
+        enum: ["Allowed", "Not_Allowed"]
+        description: "Allowed = It is allowed to start more than one session for this tlnnr (subscriber)\n
+                      Not_Allowed = the subscriber can only start one session"
+      subscriberLockStatus:
+        type: string
+        enum: ["Locked", "Not_Locked"]
+        description: "Locked = Subscriber is locked\n
+                      Not_Locked = Subscriber ist not locked"
+      logonLockStatus:
+        type: string
+        enum: ["Locked", "Not_Locked"]
+        description: "Logon lock state of the subscriber.\n
+                      Locked = Subscriber is locked. The maximum number of password failures is exceeded\n
+                      Not_Locked = Subscriber ist not locked"
+      calid:
+        type: string
+        description: "Customer-Access-Line-Id to identify the Line ID-based connection.\n
+                      Max length: 32\n
+                      Pattern: [A-Z0-9.]*"
+        example: "DE.DTAG.ABCDEF"
+      currentLogonCount:
+        type: number
+        description: "Current number of password failures of the subscriber."
+        format: int64
+      lockTime:
+        type: string
+        description: "This element contains the timestamp of the latest lock.
+                      The element is only relevant , if logonLockStatus  is 'Locked'\n
+                      Format: YYYYMMDDHHmmss"
+        example: "20131201120000"
+      unlockRule:
+        type: string
+        description: "Rule for unlock (if the maximum number of password failures is exceeded).
+                      Allowed is a number between 0-32768 directly followed by T (= day) or H (= hours).
+                      The element is only relevant, if logonLockStatus  is 'Locked'."
+        example: "'365T' or '48H'"
+      profilSet:
+        type: number
+        description: "Number of the access profile set, which is associated with the subscriber.
+                      If the number is set, it must be configured in the access platform.
+                      Otherwise the request will be rejected."
+        format: int64
+      tunnelProfile:
+        type: string
+        description: "Name of the tunnelProfile on the access platform, which is associated
+                      with the subscriber. If the tunnel profile is set, it must be configured
+                      in the access platform. Otherwise the request will be rejected.\n
+                      Max length: 20"
+      dnsProfile:
+        type: string
+        description: "Name of the dns profile. If the dns profile is set, it must be configured
+                      in the access platform. Otherwise the request will be rejected.\n
+                      Max length: 32"
+      filterId:
+        type: string
+        description: "FilterId, which is to be used for the subscriber. If the filterId is set,
+                      it must be configured in the access platform. Otherwise the request will be rejected.\n
+                      Max length: 8"
+      policyGroup:
+        type: number
+        description: "Number of policy group, which is associated to the subscriber.
+                      If the policy group is set, it must be configured in the access platform.
+                      Otherwise the request will be rejected."
+        format: int64
+      maxUpSpeed:
+        type: number
+        description: "Max session bandwidth (upstream) for the subscriber on ISO/OSI layer 3 (IP) [kbit/s]."
+        format: int64
+      maxDownSpeed:
+        type: number
+        description: "Max session bandwidth (downstream) for the subscriber on ISO/OSI layer 3 (IP) [kbit/s]."
+        format: int64
+      maxSessionDuration:
+        type: number
+        description: "Maximum session duration including all renewals in seconds.
+                      A value of 0 means that the session may be extended indefinitely."
+        format: int64
+      ipVersion:
+        type: string
+        enum: ["IPv4", "IPv6", "IPv4_IPv6", "IPv6_RequirementRelease_IPv4", "IPv4_IPv6_ReleaseRequirement_IPv4"]
+        description: "Used IP-Version."
+      ipAddress:
+        type: string
+        description: "Static IPv4 address of the subscriber,"
+      ipNetMask:
+        type: string
+        description: "IPv4 netmask of the subscriber with a static IPv4 address in dotted decimal notation."
+      reservePrefix:
+        type: string
+        enum: ["Reserve", "No_Reserve"]
+        description: "Activation of short-term reservation of the IPv6 prefix.\n
+                      Reserve = Reservation of IPv6 prefix\n
+                      No_Reserve = No reserve"
+      framedIPv6PrefixGroup:
+        $ref: '#/definitions/iPv6Prefix'
+      delegatedIPv6PrefixGroup:
+        $ref: '#/definitions/iPv6Prefix'
+
+  umtRdq:
+    title: umtRdq
+    description: "The umt structure for rdq."
+    type: object
+    properties:
+      throttleUpL3:
+        type: number
+        description: "Max session bandwidth (throttled upstream) for the subscriber on ISO/OSI layer 3 (IP) [kbit/s]."
+        format: int64
+      throttleDownL3:
+        type: number
+        description: "Max session bandwidth (throttled downstream) for the subscriber on ISO/OSI layer 3 (IP) [kbit/s]."
+        format: int64
+      ocsSubscriptionID:
+        type: string
+        description: "Unique subscription id  for a bandwith quota in OCS\n
+                      Max length: 32"
+      throttleProfile:
+        type: integer
+        description: "Number of the throttle profile. Must exist on the access platform."
+
+  readImsVoipStatusResultData:
+    title: readImsVoipStatusResultData
+    description: "The result data of the readImsVoipStatus diagnosis."
+    type: object
+    properties:
+      callnumberList:
+        $ref: '#/definitions/callnumberList'
+      cntdbRawData:
+        $ref: '#/definitions/cntdbRawData'
+
+  cntdbRawData:
+    type: object
+    description: "Raw data from the Central Network Technology Database."
+    properties:
+      imsChargingId:
+        type: string
+        description: "The subscriber specific identifier used for charging purposes."
+      blocked:
+        type: string
+        description: "Flag indicating whether the IMPU is barred from establishing multimedia sessions."
+        example: "FALSE"
+      chargId:
+        type: string
+        description: "Reference to charging profile configured in the IMS HSS FE."
+      imsSubscriptionId:
+        type: string
+        description: ""
+      registered:
+        type: string
+        description: "The IMS registration status of the IMPI. Should default to 'FALSE' (not IMS registered)."
+        example: "TRUE"
+      authScheme:
+        type: string
+        description: "Attribute indicating the authentication scheme for this IMPI/IMSI.\n
+                      If omitted, the HSS FE will use the value received from the S-CSCF.\n
+                      The following values are used:\n
+                      * 1 = Digest\n
+                      * 2 = GPRS Bundled Authentication\n
+                      * 3 = GPRS Bundled Authentication, Digest\n
+                      * 4 = NBA\n
+                      * 5 = NBA, Digest\n
+                      * 6 = NBA, GPRS Bundled Authentication\n
+                      * 7 = NBA, GPRS Bundled Authentication, Digest."
+        example: "1"
+      impi:
+        type: string
+        description: "An IMS Private Identity (IMPI) in the form of a Network Access Identifier defined in 3GPP TS 23.003."
+      eLineValue:
+        type: string
+        description: "Regular expression used by the HSS to match the Access-Network-Information AVP in a UAR message."
+      scscfUri:
+        type: string
+        description: "The SIP URI identifying the S-CSCF dynamically assigned to the subscriber."
+      scscfUriList:
+        type: string
+        description: "Multivalue attribute to store multiple S-CSCF FQDNs/IPs"
+      publicIdDataPerCallnumber:
+        $ref: '#/definitions/publicIdDataPerCallnumber'
+      subsServiceProfileDataPerCallnumber:
+        $ref: '#/definitions/subsServiceProfileDataPerCallnumber'
+
+  publicIdDataPerCallnumber:
+    type: object
+    properties:
+      publicIdentificationData:
+        type: "array"
+        items:
+          $ref: '#/definitions/publicIdentificationData'
+
+  publicIdentificationData:
+    type: object
+    properties:
+      imsRegStatus:
+        type: string
+        description: "The registration status of all IMPUs in a particular Implicit Registration Set,
+                      indicating either REGISTERED, NOT REGISTERED or UNREGISTERED.\n
+                      Should default to NOT REGISTERED.\n
+                      The following values are used:\n
+                      * R = REGISTERED\n
+                      * N = NOT REGISTERED\n
+                      * U = UNREGISTERED"
+        example: "R"
+      impu:
+        type: string
+        description: "An IMS Public User Identity (IMPU) in the format of a SIP URI or TEL URI."
+      iRegSet:
+        type: string
+        description: "This naming attribute identifies a particular Implicit Registration Set"
+      isDefault:
+        type: string
+      eMaxNumberOfContacts:
+        type: string
+        description: "This attribute contains the Maximum Number of Contacts per access allowed
+                      to be registered for a Public Identity.\n
+                      In case the Public Identity belongs to an Implicit Registration Set, the
+                      imsMaxNumberOfContacts that applies is the one of the default Public
+                      Identity of the Implicit Registration Set."
+        example: "5"
+      impi:
+        type: string
+        description: "An IMS Private Identity (IMPI) in the form of a Network Access Identifier defined in 3GPP TS 23.003."
+      imsServProfId:
+        type: string
+        description: "Identifier of a service profile associated with a particular subscriber."
+
+  subsServiceProfileDataPerCallnumber:
+    type: object
+    properties:
+      subscriberServiceProfile:
+        type: "array"
+        items:
+          $ref: '#/definitions/subscriberServiceProfile'
+
+  subscriberServiceProfile:
+    type: object
+    properties:
+      ePhoneCont:
+        type: string
+        description: "This attribute indicates the default dialing context used by the S-CSCF to
+                      determine which dialing plan rules are applied to a request originating
+                      from this Public Identity when the terminating party is identified by
+                      local phone number.\n
+                      If a domain name is used it does not need to be a routable domain since
+                      it is used for logically scooping dialing plans and not for IP routing."
+      imsServProfId:
+        type: string
+        description: "Identifier of a service profile associated with a particular subscriber."
+      eMaxSimultSess:
+        type: string
+        description: "This attribute indicates the maximum number of simultaneous sessions allowed for the terminal."
+      iFCId:
+        type: string
+        description: "Reference to service profile(s)/iFCs configured in the HSS FE. Type is string."
+
+  callnumberList:
+    type: object
+    properties:
+      callnumber:
+        type: "array"
+        items:
+          $ref: '#/definitions/callnumber'
+  callnumber:
+    type: object
+    properties:
+      rufnummer:
+        type: string
+        description: "Subscriber's phone number."
+
+  readBngInterfaceDiagnosticsOpticsStatusResultData:
+    title: readBngInterfaceDiagnosticsOpticsStatusResultData
+    type: object
+    properties:
+      laserBiasCurrent:
+        type: string
+        description: "Current laser bias [mA]."
+      laserOutputPower:
+        type: string
+        description: "Current laser output power [mW]."
+      laserOutputPowerDbm:
+        type: string
+        description: "Current laser output power [dBm]."
+      moduleTemperature:
+        type: string
+        description: "Current temperature of the laser module."
+        example: "27 degrees C / 81 degrees F"
+      moduleVoltage:
+        type: string
+        description: "Current laser module voltage."
+      rxSignalAvgOpticalPower:
+        type: string
+        description: "Average receive signal optical power [mW]."
+      rxSignalAvgOpticalPowerDbm:
+        type: string
+        description: "Average receive signal optical power [dBm]."
+
+  executeAnIltfCMResultData:
+    title: executeAnIltfCMResultData
+    type: object
+    properties:
+      metallicAccess:
+        $ref: '#/definitions/metallicAccess'
+      continuousMeasurements:
+        $ref: '#/definitions/continuousMeasurements'
+
+  continuousMeasurements:
+    title: continuousMeasurements
+    type: object
+    properties:
+      aLegLineVoltage:
+        type: number
+        format: double
+        description: "Voltage a leg against ground [V]."
+      bLegLineVoltage:
+        type: number
+        format: double
+        description: "Voltage b leg against ground [V]."
+      transversalCurrent:
+        type: number
+        format: double
+        description: "Transversal current [μA]."
+      longitudinalCurrent:
+        type: number
+        format: double
+        description: "Longitudinal current [μA]."
+      linecardTemp:
+        type: number
+        format: double
+        description: "Linecard temperature [°C]."
+
+  overrulePfcAuthenticationResultData:
+    title: overrulePfcAuthenticationResultData
+    type: object
+    required:
+      - resultdata
+    properties:
+      resultdata:
+        type: string
+        description: "Returns 'OK' if authentication was overruled successfully. Otherwise 'Overrule_Failed' will be returned."
+        example: "OK"
+
+  readAnDslOamStatusTestResultData:
+    title: readAnDslOamStatusTestResultData
+    description: "The result data of the readDslOamStatus diagnosis."
+    type: object
+    properties:
+      dslOamWiresList:
+        $ref: '#/definitions/dslOamWiresList'
+
+  dslOamWiresList:
+    type: object
+    description: "List of wires (in case of bonding up to 4 elements)."
+    properties:
+      dslOamWire:
+        type: array
+        items:
+          $ref: '#/definitions/dslOamWire'
+
+  dslOamWire:
+    title: dslOamWire
+    type: object
+    properties:
+      id:
+        type: integer
+        description: "Identifier of line within the bonding group."
+        format: int32
+      portId:
+        type: integer
+        description: "Absolute port-Id, e.G. 4"
+        format: int32
+      actatpDs:
+        type: number
+        description: ""
+        format: double
+      actatpUs:
+        type: number
+        description: ""
+        format: double
+      bandList:
+        $ref: '#/definitions/bandList'
+      channelList:
+        $ref: '#/definitions/channelList'
+      downPossibleReason:
+        $ref: '#/definitions/downPossibleReason'
+      fecSecondsActualDs:
+        type: integer
+        description: "LOS seconds downstream of actual 15 minutes interval (performance counter)\n
+                      Parameter is valid for ADSL/VDSL."
+        format: int64
+      fecSecondsActualUs:
+        type: integer
+        description: "LOS seconds upstream of actual 15 minutes interval (performance counter)\n
+                      Parameter is valid for ADSL/VDSL."
+        format: int64
+      fecSecondsLastDs:
+        type: integer
+        description: "LOS seconds downstream of last full 15 minutes interval (performance counter)\n
+                      Parameter is valid for ADSL/VDSL."
+        format: int64
+      fecSecondsLastUs:
+        type: integer
+        description: "LOS seconds upstream of last full 15 minutes interval (performance counter)\n
+                      Parameter is valid for ADSL/VDSL."
+        format: int64
+      gBondRateDs:
+        type: integer
+        description: "Bonding group downstream rate. Parameter is valid for SDSL [kbit/s]"
+        format: int64
+      gBondRateUs:
+        type: integer
+        description: "Bonding group upstream rate. Parameter is valid for SDSL [kbit/s]"
+        format: int64
+      inventoryDataList:
+        $ref: '#/definitions/inventoryDataList'
+      lineRateDs:
+        type: integer
+        description: "Single port downstream rate. Parameter is valid for ADSL/VDSL and SDSL [kbit/s]"
+        format: int64
+      lineRateUs:
+        type: integer
+        description: "Single port upstream rate. Parameter is valid for ADSL/VDSL and SDSL [kbit/s]"
+        format: int64
+      losSecondsActualDs:
+        type: integer
+        description: "LOS seconds downstream of actual 15 minutes interval (performance counter)\n
+                      Parameter is valid for ADSL/VDSL."
+        format: int64
+      losSecondsActualUs:
+        type: integer
+        description: "LOS seconds upstream of actual 15 minutes interval (performance counter)\n
+                      Parameter is valid for ADSL/VDSL."
+        format: int64
+      losSecondsLastDs:
+        type: integer
+        description: "LOS seconds downstream of last full 15 minutes interval (performance counter)\n
+                      Parameter is valid for ADSL/VDSL."
+        format: int64
+      losSecondsLastUs:
+        type: integer
+        description: "LOS seconds upstream of last full 15 minutes interval (performance counter)\n
+                      Parameter is valid for ADSL/VDSL."
+        format: int64
+      operState:
+        type: string
+        description: "Operational state of the line: The state 'up' means line is active (sync). Other states mean no sync."
+        enum: ["up","down","unknown"]
+      snrMarginDs:
+        type: number
+        description: "SNR noise margin downstream [dB]"
+        format: double
+      snrMarginUs:
+        type: number
+        description: "SNR noise margin upstream [dB]"
+        format: double
+
+  bandList:
+    title: bandList
+    type: object
+    description: "List of bands."
+    properties:
+      band:
+        type: array
+        items:
+          $ref: '#/definitions/band'
+
+  band:
+    title: band
+    type: object
+    description: "Data for a concrete band."
+    properties:
+      id:
+        type: integer
+        description: "Identifier of the band e.g '0'"
+        format: int32
+      attenuation:
+        $ref: '#/definitions/attenuation'
+      snrMargin:
+        $ref: '#/definitions/snrMargin'
+
+  attenuation:
+    title: attenuation
+    type: object
+    properties:
+      ds:
+        type: number
+        description: "Attenuation downstream [dB]"
+        format: double
+      us:
+        type: number
+        description: "Attenuation upstream [dB]"
+        format: double
+
+  snrMargin:
+    title: snrMargin
+    type: object
+    properties:
+      ds:
+        type: number
+        description: "SNR noise margin downstream [dB]"
+        format: double
+      us:
+        type: number
+        description: "SNR noise margin upstream [dB]"
+        format: double
+
+  channelList:
+    title: channelList
+    type: object
+    description: "List of all channel objects (1 to 4)."
+    properties:
+      channel:
+        type: array
+        items:
+          $ref: '#/definitions/channel'
+
+  channel:
+    title: channel
+    type: object
+    description: "Data for a concrete channel."
+    properties:
+      id:
+        type: integer
+        description: "Identifier of the channel e.g '1'"
+        format: int32
+      latency:
+        $ref: '#/definitions/latency'
+
+  latency:
+    title: latency
+    type: object
+    properties:
+      ds:
+        type: number
+        description: "Latency downstream [ms]"
+        format: double
+      us:
+        type: number
+        description: "Latency upstream [ms]"
+        format: double
+
+  downPossibleReason:
+    title: downPossibleReason
+    description: "Possible reasons for line being down."
+    type: object
+    properties:
+      csShdslError:
+        type: string
+      csXdslError:
+        type: string
+      nsShdslError:
+        type: string
+      nsXdslError:
+        type: string
+      reg1CsShdslError:
+        type: string
+      reg1NsShdslError:
+        type: string
+      reg2CsShdslError:
+        type: string
+      reg2NsShdslError:
+        type: string
+
+  inventoryDataList:
+    title: inventoryDataList
+    type: object
+    description: "Inventory data."
+    properties:
+      xtuRData:
+        $ref: '#/definitions/xtuRData'
+
+  xtuRData:
+    title: xtuRData
+    type: object
+    description: "Inventory data of the xTU-R (xDSL Transceiver Unit - Remote side)."
+    properties:
+      hgChipTypeFirmware:
+        type: string
+        description: "Home gateway info string.\n
+                      String consists of system vendor id, serial number, version number and vendor id."
+      serialNumber:
+        type: string
+        description: "Serial number of the device.\n
+                      It consists of up to 32 ASCII characters.
+                      It shall contain the equipment serial number, the equipment model and the equipment firmware
+                      version. All shall be encoded in this order and separated by space characters."
+      systemVendorId:
+        type: string
+        description: "A copy of the binary system vendor identiﬁcation ﬁeld expressed as a readable string in hexadecimal notation.\n
+                      The id itself consists of 8 binary octets, with same format as the xTU-C ITU-T G.994.1 vendor ID.\n
+                      The xTU-R system vendor ID should typically identify the xTU-R system integrator."
+        example: "04 00 41 56 4D 00 00 00"
+      vendorId:
+        type: string
+        description: "A copy of the binary vendor identiﬁcation ﬁeld expressed as a readable string in hexadecimal notation.\n
+                      The ITU-T G.994.1 vendor ID should typically identify the vendor of the xTU-R ITU-T G.994.1
+                      functionality, whether implemented in hardware or software. It is not intended to indicate the system integrator."
+        example: "B5 00 49 46 54 4E 59 14"
+      versionNumber:
+        type: string
+        description: "It consists of up to 16 ASCII characters. It shall contain the xTU-R firmware version and
+                      the xTU-R model. Both shall be encoded in this order and separated by a space character."
+        example: "1.100.136.41 A6."
+
+  readPfcNetworkServiceProfileResultData:
+    title: readPfcNetworkServiceProfileResultData
+    description: "The result data of the readPfcNetworkServiceProfile diagnosis."
+    type: object
+    properties:
+      validFrom:
+        type: string
+        description: "Timestamp with the following format: YYYYMMDDHHmmss."
+        example: "20191201120000"
+      controlSessionVlanID:
+        type: integer
+        format: int32
+        description: "VLAN ID of the control session (0..4095)."
+        example: "7"
+      dhcpRelay:
+        $ref: '#/definitions/dhcpRelay'
+      ethp2PList:
+        $ref: '#/definitions/nspEthp2PList'
+      ngCoCoList:
+        $ref: '#/definitions/nspNgCoCoList'
+
+  dhcpRelay:
+    title: dhcpRelay
+    type: object
+    properties:
+      description:
+        type: string
+        description: "Service description for the billing system."
+      mark:
+        type: integer
+        format: int32
+      serviceBWL3:
+        type: integer
+        format: int64
+        description: "Layer 3 service bandwidth [kbit/s]."
+        example: "1024"
+      vlanID:
+        type: integer
+        format: int32
+        description: "VLAN ID for Gigabit-Ethernet-Connections (0..4095)."
+        example: "3"
+
+  nspEthp2PList:
+    title: nspEthp2PList
+    type: object
+    properties:
+      ethp2P:
+        type: array
+        items:
+          $ref: '#/definitions/nspEthp2P'
+
+  nspEthp2P:
+    title: nspEthp2P
+    type: object
+    properties:
+      accessBWL2:
+        type: integer
+        format: int64
+        description: "Layer 2 access bandwidth for up- and downstream of the VLAN [kbit/s]."
+        example: "1024"
+      description:
+        type: string
+        description: "Service description for the billing system."
+      directAddressing:
+        $ref: '#/definitions/directAddressing'
+      optProfile:
+        type: string
+        description: "Reference to an optimizing profile on the BNG."
+      serviceBWPercBE:
+        type: integer
+        format: int32
+        description: "Percentage of the service bandwidth for the traffic class Best Effort. (0..100)"
+        example: "25"
+      serviceBWPercLD:
+        type: integer
+        format: int32
+        description: "Percentage of the service bandwidth for the traffic class Low Delay. (0..100)"
+        example: "25"
+      serviceBWPercLL:
+        type: integer
+        format: int32
+        description: "Percentage of the service bandwidth for the traffic class Low Loss. (0..100)"
+        example: "25"
+      serviceBWPercVoice:
+        type: integer
+        format: int32
+        description: "Percentage of the service bandwidth for the traffic class Voice. (0..100)"
+        example: "25"
+      serviceBWL2:
+        type: integer
+        format: int64
+        description: "Layer 2 service bandwidth for up- and downstream of the VLAN [kbit/s]."
+      vlanId:
+        type: integer
+        format: int32
+        description: "VLAN ID (0..4095)."
+
+  nspNgCoCoList:
+    title: nspNgCoCoList
+    type: object
+    properties:
+      ngCoCo:
+        type: array
+        items:
+          $ref: '#/definitions/nspNgCoCo'
+
+  nspNgCoCo:
+    title: nspNgCoCo
+    type: object
+    description: "Next generation company connect parameters."
+    properties:
+      accessBWL2:
+        type: integer
+        format: int32
+        description: "Layer 2 access bandwidth for up- and downstream of the VLAN [kbit/s]."
+        example: "1024"
+      description:
+        type: string
+      iPv4LoopbackAddress:
+        type: string
+        description: "IPv4 address."
+        example: "10.124.10.10"
+      iPv4SegmentList:
+        $ref: '#/definitions/iPv4SegmentList'
+      iPv4TransitSubnet:
+        type: string
+        description: "IPv4 subnet."
+        example: "193.14.12.234/28"
+      iPv6LoopbackAddress:
+        type: string
+        description: "IPv6 address."
+        example: "2134:2345:9218:726a:367f:6374:afdd:1"
+      iPv6SegmentList:
+        $ref: '#/definitions/iPv6SegmentList'
+      optProfile:
+        type: string
+        description: "Reference to an optimizing profile on the BNG."
+      serviceBWL3:
+        type: integer
+        format: int32
+        description: "Layer 3 service bandwidth for up- and downstream of the VLAN [kbit/s]."
+        example: "1024"
+      serviceBWPercBE:
+        type: integer
+        format: int32
+        description: "Percentage of the service bandwidth for the traffic class Best Effort. (0..100)"
+        example: "25"
+      serviceBWPercLD:
+        type: integer
+        format: int32
+        description: "Percentage of the service bandwidth for the traffic class Low Delay. (0..100)"
+        example: "25"
+      serviceBWPercLL:
+        type: integer
+        format: int32
+        description: "Percentage of the service bandwidth for the traffic class Low Loss. (0..100)"
+        example: "25"
+      serviceBWPercVoice:
+        type: integer
+        format: int32
+        description: "Percentage of the service bandwidth for the traffic class Voice. (0..100)"
+        example: "25"
+      vlanID:
+        type: integer
+        format: int64
+        description: "VLAN ID (0..4095)."
+        example: "3011"
+
+  executeAnIltfDialToneTestResultData:
+    title: executeAnIltfDialToneTestResultData
+    description: "The result data of the executeAnIltfDialToneTest diagnosis."
+    type: object
+    properties:
+      metallicAccess:
+        $ref: '#/definitions/metallicAccess'
+      dialToneTest:
+        $ref: '#/definitions/dialToneTest'
+
+  dialToneTest:
+    title: dialToneTest
+    description: "Dial tone test specific parameters."
+    type: object
+    properties:
+      pullStatus:
+        type: integer
+        format: int32
+        description: "Status of dial tone test\n
+                      0 = dial tone not detected\n
+                      1 = dial tone pulled\n
+                      2 = dial tone already present"
+        example: "1"
+      timeToPull:
+        type: integer
+        format: int32
+        description: "Time to receive dial tone [ms]"
+        example: "320"
+      breakStatus:
+        type: integer
+        format: int32
+        description: "Status of break dial tone\n
+                      0 = dial tone not broken\n
+                      1 = dial tone broken\n
+                      2 = dial tone not attempted"
+        example: "0"
+  readBngSubscribersSummaryInterfaceStatusResultData:
+    title: readBngSubscribersSummaryInterfaceStatusResultData
+    description: "The result data of the readBngSubscribersSummaryInterfaceStatus diagnosis."
+    type: object
+    properties:
+      active:
+        type: integer
+        format: int64
+        description: "Overall count of active sessions (PPPoE and L2BA)."
+        example: "148"
+      total:
+        type: integer
+        format: int64
+        description: "Overall count of sessions (PPPoE and L2BA)."
+        example: "148"
+      pppoe:
+        type: integer
+        format: int64
+        description: "Overall count of PPPoE sessions (terminated and tunneled)."
+        example: "135"
+      l2Ba:
+        type: integer
+        format: int64
+        description: "Count of L2BA sessions."
+        example: "13"
+      tunneled:
+        type: integer
+        format: int64
+        description: "Count of tunneled (L2TP) PPPoE sessions."
+        example: "7"
+      terminated:
+        type: integer
+        format: int64
+        description: "Count of (at the bng) terminated PPPoE sessions."
+        example: "128"
+
+  readAnAncpSessionInformationResultData:
+    title: readAnAncpSessionInformationResultData
+    description: "The result data of the readAnAncpSessionInformation diagnosis."
+    type: object
+    properties:
+      ancpSessionInformationList:
+        $ref: '#/definitions/ancpSessionInformationList'
+
+  ancpSessionInformationList:
+    title: ancpSessionInformationList
+    description: "List of determined sessions."
+    type: object
+    properties:
+      ancpSessionInformation:
+        type: array
+        items:
+          $ref: '#/definitions/ancpSessionInformation'
+
+  ancpSessionInformation:
+    title: ancpSessionInformation
+    description: "Attributes for a single ANCP sessions."
+    type: object
+    properties:
+      adminState:
+        type: string
+        enum: ["unlocked","locked"]
+        description: "ANCP adminstate of the ANCP session."
+        example: "unlocked"
+      bngIp:
+        type: string
+        description: "IP address of the BNG."
+        example: "10.149.244.151"
+      id:
+        type: integer
+        format: int32
+        description: "Session-id of the ANCP session."
+        example: "1"
+      operState:
+        type: string
+        enum: ["up","down","unknown"]
+        description: "ANCP operational state of the ANCP session."
+        example: "up"
+      partitionId:
+        type: integer
+        format: int32
+        description: "Used partition id for the ANCP session (0..9)."
+        example: "2"
+      svlan:
+        type: integer
+        format: int32
+        description: "SVLAN id of the ANCP session (0..4096)."
+        example: "17"
+
+  executeAnIltfCalibrationMeasurementResultData:
+    title: executeAnIltfCalibrationMeasurementResultData
+    description: "The result data of the executeAnIltfCalibrationMeasurement diagnosis."
+    type: object
+    properties:
+      capacitances:
+        $ref: '#/definitions/iltfCapacitances'
+
+  iltfCapacitances:
+    title: iltfCapacitances
+    type: object
+    properties:
+      aLegGround:
+        type: number
+        format: double
+        description: "Capacitance between a leg and ground [nF]."
+        example: "51"
+      aLegGroundValidity:
+        $ref: '#/definitions/groundValidity'
+      bLegGround:
+        type: number
+        format: double
+        description: "Capacitance between b leg and ground [nF]."
+        example: "51"
+      bLegGroundValidity:
+        $ref: '#/definitions/groundValidity'
+
+  groundValidity:
+    type: string
+    enum: ["VALID","NOT_VALID"]
+    description: "Indicates whether the measured value is plausible or not."
+    example: "VALID"
+
+  readRpmPerformanceDataResultData:
+    title: readRpmPerformanceDataResultData
+    description: "The result data of the readRpmPerformanceData diagnosis."
+    type: object
+    properties:
+      jsonData:
+        type: string
+        description: "Special JSON encoded result of the RPM data that can be rendered in an
+                      interactive way by the OpDiNG RPM-UI-Component."
+
+  readAnFtthOpticalPowerResultData:
+    title: readAnFtthOpticalPowerResultData
+    description: "The result data of the readAnFtthOpticalPower diagnosis."
+    type: object
+    properties:
+      opticalPowerList:
+        $ref: '#/definitions/opticalPowerList'
+
+  opticalPowerList:
+    title: opticalPowerList
+    description: "List of optical power objects, one for each ONU."
+    type: object
+    properties:
+      opticalPower:
+        type: array
+        items:
+          $ref: '#/definitions/opticalPower'
+
+  opticalPower:
+    title: opticalPower
+    type: object
+    properties:
+      selectedOnu:
+        type: boolean
+        description: "True, if this ONU is the one that was diagnosed. False for the neighbour ONUs within the PON."
+      onuId:
+        type: integer
+        format: int64
+        description: "ID of the ONU within the PON."
+        example: "17"
+      oltTxPower:
+        type: number
+        format: double
+        description: "Transmitted power at OLT-Side (PON-Port). [dBm]"
+        example: "5.2"
+      oltRxPower:
+        type: number
+        format: double
+        description: "Received power at OLT-Side related to the current ONU. [dBm]"
+        example: "-17.26"
+      onuTxPower:
+        type: number
+        format: double
+        description: "Transmitted power at ONU-Side. [dBm]"
+        example: "1.96"
+      onuRxPower:
+        type: number
+        format: double
+        description: "Received power at ONU-Side. [dBm]"
+        example: "14.33"
+      klsId:
+        type: string
+        description: "ID of the property where the customer line is terminated (KLS-ID)"
+        example: "127008"
+      gfapName:
+        type: string
+        description: "Name of the GfAP the customers ONT is connected to"
+        example: "AP127_1_1"
+
+  readAnFtthOnuInformationResultData:
+    title: readAnFtthOnuInformationResultData
+    description: "The result data of the readAnFtthOnuInformation diagnosis."
+    type: object
+    properties:
+      model:
+        type: string
+        description: "Type of the ONU (optical network unit)"
+        example: "HG8010u"
+      softwareVersion:
+        type: string
+        description: "Software Version of the ONU (optical network unit)"
+        example: "V3R015C10S158"
+      manufacturer:
+        type: string
+        description: "Vendor Name of the ONU (optical network unit)"
+        example: "HWTC"
+
+  readPfcRouterInfoResultData:
+    title: readPfcRouterInfoResultData
+    type: object
+    description: "reads session information (bng and bng port) from platform control LISA"
+    properties:
+      nasIPAddress:
+        type: string
+        description: "IP-address of the BNG (in RMK AT: routerID)"
+        example: "192.168.1.1"
+      nasPort:
+        type: integer
+        description: "encoded port of the BNG (needs mapping / decoding)"
+        format: int64
+        example: "621138151"
+      nasPortType:
+        type: integer
+        description: "type of the port"
+        format: int64
+        example: "34"
+
+  executeRdL3PingRdResultData:
+    title: executeRdL3PingRdResultData
+    type: object
+    description: "Netfactory RD sends ICMP request to the management interface of the remote device"
+    properties:
+      mgmtIpAddress:
+        type: string
+        description: "IP-address"
+        example: "1.2.3.4"
+      numPacketsSend:
+        type: integer
+        description: "The value of send packets"
+        format: int64
+        example: "5"
+      numPacketsReceived:
+        type: integer
+        description: "The value of received packets"
+        format: int64
+        example: "5"
+      roundTripTimeMin:
+        type: number
+        format: double
+        description: "The value of minimal trip time"
+        example: "2.0"
+      roundTripTimeMax:
+        type: number
+        format: double
+        description: "The value of maximum trip time"
+        example: "8.0"
+      roundTripTimeAvr:
+        type: number
+        format: double
+        description: "The average value of trip time"
+        example: "5.0"
+
+  readAnVectoringStatusTestResultData:
+    title: readAnVectoringStatusTestResultData
+    type: object
+    description: "The result data of the readAnVectoringStatusTestResultData diagnosis."
+    properties:
+      fallbackState:
+        type: string
+        enum: ["NO_FALLBACK", "FALLBACK_2_VECTORING", "FALLBACK"]
+        example: "FALLBACK"
+      fallbackReason:
+        type: string
+
+  readRdInventoryDataResultData:
+    title: readRdInventoryDataResultData
+    type: object
+    description: "The result data of the readRdInventoryDataResultData diagnosis."
+    properties:
+      remoteDevice:
+        $ref: '#/definitions/remoteDevice'
+
+  remoteDevice:
+    type: object
+    description: "Structure for receiving information on the RD. Available if an RD is assigned to the service"
+    properties:
+      vendor:
+        type: string
+        description: "Manufacturer of the RD"
+        example: "adtran"
+      model:
+        type: string
+        description: "Model of the RD"
+        example: "nv4660"
+      chassisSerial:
+        type: string
+        description: "Serial number of the RD (chassis)"
+        example: "ADTN1616AC365"
+      macAddress:
+        type: string
+        description: "Primary MAC of the RD, the NNI Fiber"
+        example: "001992b9bc7d"
+      snmpEngineId:
+        type: string
+        description: "SNPM Engine ID of the RD (chassis)"
+        example: "800002980300199297327e"
+      chassisList:
+        $ref: '#/definitions/chassisList'
+      rdInventory:
+        $ref: '#/definitions/rdInventory'
+      rdModuleList:
+        $ref: '#/definitions/rdModuleList'
+      rdPortList:
+        $ref: '#/definitions/rdPortList'
+    required:
+      - vendor
+      - model
+      - chassisSerial
+      - macAddress
+      - rdInventory
+
+  chassisList:
+    title: chassisList
+    description: "List of objects containing chassis information"
+    type: object
+    properties:
+      chassis:
+        type: array
+        minItems: 1
+        items:
+          $ref: '#/definitions/chassis'
+    required:
+      - chassis
+
+  chassis:
+    title: chassis
+    type: object
+    description: "Object containing chassis information"
+    properties:
+      materialNumber:
+        type: string
+        description: "Telekom material number of the RD (chassis)"
+        example: "40279338"
+      materialDescription:
+        type: string
+        description: "Telekom material designation"
+        example: "ADTRAN NV4660 w/ VDSL (230V AC Indoor)"
+    required:
+      - materialNumber
+      - materialDescription
+
+  rdInventory:
+    title: rdInventory
+    type: object
+    description: "Object containing detailed information about RD"
+    properties:
+      firmwareVersion:
+        type: string
+        description: "Current firmware version of the RD (according to the inventory of the Net Factory RD)"
+        example: "R13.3.1.HA.E"
+      defaultFirmwareVersion:
+        type: string
+        description: "Default firmware version of the RD (according to the inventory of the Net Factory RD)"
+        example: "R13.6.0.HA.E"
+      firmwareUpdateDate:
+        type: string
+        format: date-time
+        description: "Time of last firmware update of the RD (according to the inventory of the Net Factory RD)"
+        example: "2019-02-11T09:26:26Z"
+      bootloaderVersion:
+        type: string
+        description: "Current bootloader version of the RD (according to the inventory of the Net Factory RD)"
+        example: "R10.10.0.B9"
+      defaultBootloaderVersion:
+        type: string
+        description: "Default bootloader version of the RD (according to the inventory of the Net Factory RD)"
+        example: "R10.10.0.B9"
+      bootloaderUpdateDate:
+        type: string
+        format: date-time
+        description: "Time of the last bootloader update of the RD (according to the inventory of the Net Factory RD)"
+        example: "2018-08-03T14:39:47Z"
+      baseconfigVersion:
+        type: string
+        description: "Current baseconfig version of the RD (according to the inventory of the Net Factory RD)"
+        example: "V0012"
+      defaultBaseconfigVersion:
+        type: string
+        description: "Default baseconfig version of the RD (according to the inventory of the Net Factory RD)"
+        example: "V0015_DNS_DEV01_AVTEST"
+      baseconfigUpdateDate:
+        type: string
+        format: date-time
+        description: "Time of the last baseconfig update of the RD (according to the inventory of the Net Factory RD)"
+        example: "2018-08-03T14:39:47Z"
+      dateAssigned:
+        type: string
+        format: date-time
+        description: "Time of assignment of the RD device to the RFS RD"
+        example: "2019-02-11T09:26:43Z"
+      dateInventoried:
+        type: string
+        format: date-time
+        description: "Time of initialization (basic configuration) of the device"
+        example: "2017-01-17T05:47:02Z"
+    required:
+      - firmwareVersion
+      - bootloaderVersion
+      - baseconfigVersion
+      - dateAssigned
+      - dateInventoried
+
+  rdModuleList:
+    title: rdModuleList
+    type: object
+    description: "List of inventoried modules of the RD. Only those modules are recognized that can be queried by the RD via CLI"
+    properties:
+      rdModule:
+        type: array
+        minItems: 1
+        items:
+          $ref: '#/definitions/rdModule'
+    required:
+      - rdModule
+
+  rdModule:
+    title: rdModule
+    type: object
+    description: "Inventoried module of the RD"
+    properties:
+      moduleType:
+        type: string
+        description: "Type of module"
+        example: "SFP"
+      vendor:
+        type: string
+        description: "Manufacturer of the module"
+        example: "WTD"
+      serial:
+        type: string
+        description: "Serial number of the module"
+        example: "EA132200050213"
+      slot:
+        type: string
+        description: "Slot in manufacturer name"
+        example: "1"
+      sfpReachKm:
+        type: string
+        description: "GF range (only with SFP; read from module)"
+        example: "10,000"
+      sfpWavelengthNm:
+        type: string
+        description: "GF wavelength (only with SFP; read from module)"
+        example: "1310,000"
+    required:
+      - moduleType
+      - vendor
+      - slot
+
+  rdPortList:
+    title: rdPortList
+    type: object
+    description: "List of physical ports of the RD"
+    properties:
+      rdPort:
+        type: array
+        minItems: 1
+        items:
+          $ref: '#/definitions/rdPort'
+    required:
+      - rdPort
+
+  Devices:
+    title: Devices
+    type: object
+    description: "List of devices"
+    properties:
+      Device:
+        type: array
+        minItems: 1
+        items:
+          $ref: '#/definitions/Device'
+
+  Device:
+    title: Device
+    type: object
+    description: "device"
+    properties:
+      description:
+        type: string
+      deviceId:
+        type: string
+      firmwareVersion:
+        type: string
+      ip:
+        type: string
+      model:
+        type: string
+      ipV4Status:
+        type: string
+      ipV6Status:
+        type: string
+      oui:
+        type: string
+      productClass:
+        type: string
+      provisioningCode:
+        type: string
+      sn:
+        type: string
+      subscriberId:
+        type: string
+      timestamp:
+        type: string
+      upTime:
+        type: string
+      userId:
+        type: string
+      vendor:
+        type: string
+      wlansRef:
+        type: string
+
+  Wlans:
+    title: Wlans
+    type: object
+    description: "List of wlans"
+    properties:
+      Wlan:
+        type: array
+        minItems: 1
+        items:
+          $ref: '#/definitions/Wlan'
+
+  Wlan:
+    title: Wlan
+    type: object
+    description: wlan
+    properties:
+      autoChannel:
+        type: boolean
+      beaconType:
+        type: string
+      channel:
+        type: string
+      enabled:
+        type: boolean
+      id:
+        type: integer
+        format: int32
+      keypassPhrase:
+        type: string
+      passphrase:
+        type: string
+      ssid:
+        type: string
+      standard:
+        type: string
+      status:
+        type: string
+      WlanParameters:
+        $ref: '#/definitions/WlanParameters'
+
+
+  WlanParameters:
+    title: WlanParameters
+    type: object
+    description: "List of WlanParameters"
+    properties:
+      WlanParameter:
+        type: array
+        minItems: 1
+        items:
+          $ref: '#/definitions/WlanParameter'
+
+
+  WlanParameter:
+    title: WlanParameters
+    type: object
+    description: "Wlan parameter"
+    properties:
+      ghzFrequency:
+        type: string
+      keypassPhrase:
+        type: string
+
+
+  rdPort:
+    title: rdPort
+    type: object
+    description: "Physical port of the RD"
+    properties:
+      macAddress:
+        type: string
+        description: "MAC address of the port"
+        example: "001992b9bc7d"
+      vendorPortName:
+        type: string
+        description: "Manufacturer designation of the port, cli ident"
+        example: "gigabit-ethernet 0/1"
+    required:
+      - macAddress
+      - vendorPortName
+
+  executeRmdRouterPasswordChangeResultData:
+    title: executeRmdRouterPasswordChangeResultData
+    type: object
+    description: "result data for the ethernet-loopback to the remote device"
+    properties:
+      status:
+        type: string
+
+  executeRmdRouterFirmwareUpdateResultData:
+    title: executeRmdRouterFirmwareUpdateResultData
+    type: object
+    description: "result data for the router firmware update operation"
+    properties:
+      status:
+        type: string
+
+  readRmdRouterDataExtendedResultData:
+    title: readRmdRouterDataExtendedResultData
+    type: object
+    description: "read rmd router data extended result data"
+    properties:
+      Device:
+        $ref: '#/definitions/Device'
+      Firmware:
+        $ref: '#/definitions/Firmware'
+      CpeOnlineStatus:
+        $ref: '#/definitions/CpeOnlineStatus'
+      InterfaceStatus:
+        $ref: '#/definitions/InterfaceStatus'
+      Wlans:
+        $ref: '#/definitions/Wlans'
+      VoiceServiceNumbers:
+        $ref: '#/definitions/VoiceServiceNumbers'
+
+  readRmdRouterDataResultData:
+    title: readRmdRouterDataResultData
+    type: object
+    description: "read rmd router data  result data"
+    properties:
+      Devices:
+        $ref: '#/definitions/Devices'
+
+
+  VoiceServiceNumbers:
+    title: VoiceServiceNumbers
+    type: object
+    description: "List of VoiceServiceNumbers"
+    properties:
+      VoipNumber:
+        type: array
+        minItems: 1
+        items:
+          $ref: '#/definitions/VoipNumber'
+
+  VoipNumber:
+    title: VoipNumber
+    type: object
+    description: "List of VoipNumber"
+    properties:
+      number:
+        type: string
+      outgoingCalls:
+        type: integer
+        format: int32
+      status:
+        type: string
+      voiceServiceNumber:
+        type: integer
+        format: int32
+
+  Firmware:
+    title: Firmware
+    type: object
+    description: "Firmware"
+    properties:
+      currentVersion:
+        type: string
+      deviceId:
+        type: string
+      recommendedVersion:
+        type: string
+      status:
+        type: string
+
+  CpeOnlineStatus:
+    title: CpeOnlineStatus
+    type: object
+    description: "CpeOnlineStatus"
+    properties:
+      statusValue:
+        type: string
+
+  InterfaceStatus:
+    title: InterfaceStatus
+    type: object
+    description: "InterfaceStatus"
+    properties:
+      DslInterfaceStatuses:
+        $ref: '#/definitions/DslInterfaceStatuses'
+
+
+  DslInterfaceStatuses:
+    title: DslInterfaceStatuses
+    type: object
+    description: "DslInterfaceStatuses"
+    properties:
+      DslInterfaceStatus:
+        type: array
+        minItems: 1
+        items:
+          $ref: '#/definitions/DslInterfaceStatus'
+
+  DslInterfaceStatus:
+    title: DslInterfaceStatus
+    type: object
+    description: "DslInterfaceStatus"
+    properties:
+      alias:
+        type: string
+      pppLine:
+        $ref: '#/definitions/PppLine'
+      dslLine:
+        $ref: '#/definitions/RmdDslLine'
+
+  RmdDslLine:
+    title: DslLine
+    type: object
+    description: "DslLine"
+    properties:
+      alias:
+        type: string
+      downstreamCurrent:
+        type: integer
+        format: int32
+      downstreamMax:
+        type: integer
+        format: int32
+      enabled:
+        type: boolean
+      lowerLayers:
+        type: string
+      lineName:
+        type: string
+      setterMethodFor:
+        type: string
+      status:
+        type: string
+      upStreamCurrent:
+        type: integer
+        format: int32
+      upStreamMax:
+        type: integer
+        format: int32
+
+  PppLine:
+    title: PppLine
+    type: object
+    description: "PppLine"
+    properties:
+      alias:
+        type: string
+      connectionStatus:
+        type: string
+      iPv6Enabled:
+        type: boolean
+      lineName:
+        type: string
+      number:
+        type: string
+      setterMethodFor:
+        type: string
+      status:
+        type: string
+      username:
+        type: string
+
+
+  executeRmdRouterRebootResultData:
+    title: executeRmdRouterRebootResultData
+    type: object
+    description: "result data for the router reboot operation"
+    properties:
+      reboot:
+        type: string
+
+  executeRdEthLbResultData:
+    title: executeRdEthLbResultData
+    type: object
+    description: "result data for the ethernet-loopback to the remote device"
+    properties:
+      l2PingTargetList:
+        $ref: '#/definitions/l2PingTargetList'
+  l2PingTargetList:
+    title: l2PingTargetList
+    description: "list of L2 ping targets"
+    type: object
+    properties:
+      l2PingTarget:
+        type: array
+        items:
+          $ref: '#/definitions/l2PingTarget'
+  l2PingTarget:
+    title: l2PingTarget
+    type: object
+    description: "L2 ping targets"
+    properties:
+      targetMpId:
+        type: integer
+        format: int32
+        description: "MP-ID of target MEP"
+        example: 101
+      numFramesReceived:
+        type: integer
+        format: int32
+        description: "number of received response frames"
+        example: 5
+      numFramesSend:
+        type: integer
+        format: int32
+        description: "number of sent frames"
+        example: 5
+      roundTripTimeMin:
+        type: string
+        description: "shortest response time, unit:  ms"
+        example: 7
+      roundTripTimeMax:
+        type: string
+        description: "longest response time, unit: ms"
+        example: 9
+      roundTripTimeAvr:
+        type: string
+        description: "average response time, unit: ms"
+        example: 8
+      sourceMpId:
+        type: integer
+        format: int32
+        description: "MP-ID of source MEP"
+        example: 100
+      sourceEvcId:
+        type: string
+        description: "only available if EVC RFD-ID included in request"
+        example: "DTAG_VC_yx58p3"
+      targetMacAddress:
+        type: string
+        description: "MAC-address of target"
+      frameCos:
+        type: string
+        enum: [ "LL", "LD", "VO", "NM", "BE" ]
+        description: "QoS class of sent LoopBack PDU"
+        example: "BE"
+      frameVlanId:
+        type: integer
+        format: int32
+        description: "only available if EVC RFD-ID included in request"
+        example: 3002
+
+responses:
+  '202':
+    description:
+      "Request accepted\nThe consumer's API implementation should return this HTTP status code if the data was received successfully"
+  '400':
+    description:
+      "Bad Request\nGeneric client-side error: Errors can be like malformed request syntax, or invalid request message parameters.\nThe client SHOULD NOT repeat the request without modifications."
+    schema:
+      $ref: '#/definitions/error'
+  '500':
+    description:
+      "Internal Server Error\nThe server has encountered a situation it doesn't know how to handle."
+    schema:
+      $ref: '#/definitions/error'
+p   C : \ U s e r s \ a 3 0 6 5 5 5 \ A p p D a t a \ L o c a l \ T e m p \ { 7 5 D 1 1 4 2 5 - 1 F B D - 4 4 5 A - B 8 F A - 9 5 7 0 7 1 2 2 B F 4 6 } \ O p D i N G _ R E S T _ A P I _ s w a g g e r _ c o n s u m e r . y a m l %   O p D i N G _ R E S T _ A P I _ s w a g g e r _ c o n s u m e r . y a m l C   C : \ U s e r s \ a 3 0 6 5 5 5 \ D e s k t o p \ y a m l \ O p D i N G _ R E S T _ A P I _ s w a g g e r _ c o n s u m e r . y a m l                                                                                                                                                                                                                                                                                                                                                                                                                       

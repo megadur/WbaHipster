@@ -1,0 +1,56 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+            <h2 id="jhi-bng-info-heading" jhiTranslate="wbaHipsterApp.bngInfo.home.createOrEditLabel">Create or edit a Bng Info</h2>
+
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+
+                <div class="form-group" [hidden]="!editForm.get('id')!.value">
+                    <label for="id" jhiTranslate="global.field.id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id" formControlName="id" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="wbaHipsterApp.bngInfo.endSz" for="field_endSz">End Sz</label>
+                    <input type="text" class="form-control" name="endSz" id="field_endSz"
+                           formControlName="endSz"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="wbaHipsterApp.bngInfo.lineId" for="field_lineId">Line Id</label>
+                    <input type="text" class="form-control" name="lineId" id="field_lineId"
+                           formControlName="lineId"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="wbaHipsterApp.bngInfo.portName" for="field_portName">Port Name</label>
+                    <input type="text" class="form-control" name="portName" id="field_portName"
+                           formControlName="portName"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="wbaHipsterApp.bngInfo.tsLastQuery" for="field_tsLastQuery">Ts Last Query</label>
+                    <input type="text" class="form-control" name="tsLastQuery" id="field_tsLastQuery"
+                           formControlName="tsLastQuery"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="wbaHipsterApp.bngInfo.tsLastQuerySuccess" for="field_tsLastQuerySuccess">Ts Last Query Success</label>
+                    <input type="text" class="form-control" name="tsLastQuerySuccess" id="field_tsLastQuerySuccess"
+                           formControlName="tsLastQuerySuccess"/>
+                </div>
+            </div>
+
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary" (click)="previousState()">
+                    <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+                </button>
+
+                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

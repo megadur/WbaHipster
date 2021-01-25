@@ -1,0 +1,45 @@
+{
+  "name": "LineInfo",
+  "fields": [
+    {
+      "fieldName": "lineId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "uplinkPort",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "ipAddress",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "tsLastQuery",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "tsLastQuerySuccess",
+      "fieldType": "String"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "bngInfo",
+      "otherEntityRelationshipName": "lineInfo",
+      "relationshipName": "bngInfo",
+      "otherEntityField": "id"
+    }
+  ],
+  "changelogDate": "20210125084049",
+  "entityTableName": "line_info",
+  "dto": "no",
+  "pagination": "no",
+  "service": "no",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": ["WbaHipster"]
+}

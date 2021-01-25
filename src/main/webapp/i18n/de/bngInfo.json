@@ -1,0 +1,27 @@
+{
+  "wbaHipsterApp": {
+    "bngInfo": {
+      "home": {
+        "title": "Bng Infos",
+        "createLabel": "Bng Info erstellen",
+        "createOrEditLabel": "Bng Info erstellen oder bearbeiten",
+        "notFound": "No Bng Infos found"
+      },
+      "created": "Bng Info erstellt mit ID {{ param }}",
+      "updated": "Bng Info aktualisiert mit ID {{ param }}",
+      "deleted": "Bng Info gelöscht mit ID {{ param }}",
+      "delete": {
+        "question": "Soll Bng Info {{ id }} wirklich dauerhaft gelöscht werden?"
+      },
+      "detail": {
+        "title": "Bng Info"
+      },
+      "endSz": "End Sz",
+      "lineId": "Line Id",
+      "portName": "Port Name",
+      "tsLastQuery": "Ts Last Query",
+      "tsLastQuerySuccess": "Ts Last Query Success",
+      "lineInfo": "Line Info"
+    }
+  }
+}
