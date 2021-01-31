@@ -1,7 +1,7 @@
 application {
   config {
     applicationType monolith
-    authenticationType oauth2
+    authenticationType jwt
     baseName WbaHipster
     buildTool maven
     cacheProvider ehcache
@@ -11,18 +11,17 @@ application {
     databaseType sql
     devDatabaseType h2Disk
     dtoSuffix DTO
-    enableHibernateCache true
-    enableSwaggerCodegen false
+    enableHibernateCache false
+    enableSwaggerCodegen true
     enableTranslation true
     jhiPrefix jhi
-    jwtSecretKey "ZWQ3NTE5NjI2ODY3OGFmZmU2N2NkNjhmZDRkOGQwZTBmZWQ1OGQ1ZmFmYjZjNzZhOTYxOWYxZmU0NmE4NmEzZWY5ZWE1NmExNzQ2YTk0ODk0MDE1NTQwYWZmN2Y3MDYzZWE3YzQ0YzRmZWE4NTZhYjRlMjVhMTBkNGJhZmY3NDc="
     languages [en, de]
   	messageBroker kafka
     nativeLanguage en
     packageName com.dtit.tm
     prodDatabaseType mysql
     searchEngine false
-    serverPort 8084
+    serverPort 8080
     serviceDiscoveryType false
     skipClient false
     skipServer false

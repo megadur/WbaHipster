@@ -1,0 +1,20 @@
+
+entity BngInfo {
+  endSz String,
+  lineId String,
+  portName String,
+  tsLastQuery String,
+  tsLastQuerySuccess String
+}
+entity LineInfo {
+  lineId String,
+  uplinkPort String,
+  ipAddress String,
+  tsLastQuery String,
+  tsLastQuerySuccess String
+}
+relationship OneToMany {
+  BngInfo{lineInfo} to LineInfo{bngInfo}
+}
+
+service * with serviceClass

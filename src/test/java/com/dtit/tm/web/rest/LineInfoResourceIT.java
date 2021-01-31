@@ -4,6 +4,7 @@ import com.dtit.tm.WbaHipsterApp;
 import com.dtit.tm.config.TestSecurityConfiguration;
 import com.dtit.tm.domain.LineInfo;
 import com.dtit.tm.repository.LineInfoRepository;
+import com.dtit.tm.service.LineInfoService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,6 +49,9 @@ public class LineInfoResourceIT {
 
     @Autowired
     private LineInfoRepository lineInfoRepository;
+
+    @Autowired
+    private LineInfoService lineInfoService;
 
     @Autowired
     private EntityManager em;
@@ -181,7 +185,7 @@ public class LineInfoResourceIT {
     @Transactional
     public void updateLineInfo() throws Exception {
         // Initialize the database
-        lineInfoRepository.saveAndFlush(lineInfo);
+        lineInfoService.save(lineInfo);
 
         int databaseSizeBeforeUpdate = lineInfoRepository.findAll().size();
 
@@ -232,7 +236,7 @@ public class LineInfoResourceIT {
     @Transactional
     public void deleteLineInfo() throws Exception {
         // Initialize the database
-        lineInfoRepository.saveAndFlush(lineInfo);
+        lineInfoService.save(lineInfo);
 
         int databaseSizeBeforeDelete = lineInfoRepository.findAll().size();
 

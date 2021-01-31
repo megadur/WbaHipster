@@ -1,7 +1,7 @@
 package com.dtit.tm.web.rest;
 
 import com.dtit.tm.domain.LineInfo;
-import com.dtit.tm.repository.LineInfoRepository;
+import com.dtit.tm.service.LineInfoService;
 import com.dtit.tm.web.rest.errors.BadRequestAlertException;
 
 import io.github.jhipster.web.util.HeaderUtil;
@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -23,7 +22,6 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/api")
-@Transactional
 public class LineInfoResource {
 
     private final Logger log = LoggerFactory.getLogger(LineInfoResource.class);
@@ -33,10 +31,10 @@ public class LineInfoResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final LineInfoRepository lineInfoRepository;
+    private final LineInfoService lineInfoService;
 
-    public LineInfoResource(LineInfoRepository lineInfoRepository) {
-        this.lineInfoRepository = lineInfoRepository;
+    public LineInfoResource(LineInfoService lineInfoService) {
+        this.lineInfoService = lineInfoService;
     }
 
     /**
@@ -52,7 +50,7 @@ public class LineInfoResource {
         if (lineInfo.getId() != null) {
             throw new BadRequestAlertException("A new lineInfo cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        LineInfo result = lineInfoRepository.save(lineInfo);
+        LineInfo result = lineInfoService.save(lineInfo);
         return ResponseEntity.created(new URI("/api/line-infos/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +71,7 @@ public class LineInfoResource {
         if (lineInfo.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        LineInfo result = lineInfoRepository.save(lineInfo);
+        LineInfo result = lineInfoService.save(lineInfo);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, lineInfo.getId().toString()))
             .body(result);
@@ -87,7 +85,7 @@ public class LineInfoResource {
     @GetMapping("/line-infos")
     public List<LineInfo> getAllLineInfos() {
         log.debug("REST request to get all LineInfos");
-        return lineInfoRepository.findAll();
+        return lineInfoService.findAll();
     }
 
     /**
@@ -99,7 +97,7 @@ public class LineInfoResource {
     @GetMapping("/line-infos/{id}")
     public ResponseEntity<LineInfo> getLineInfo(@PathVariable Long id) {
         log.debug("REST request to get LineInfo : {}", id);
-        Optional<LineInfo> lineInfo = lineInfoRepository.findById(id);
+        Optional<LineInfo> lineInfo = lineInfoService.findOne(id);
         return ResponseUtil.wrapOrNotFound(lineInfo);
     }
 
@@ -112,7 +110,7 @@ public class LineInfoResource {
     @DeleteMapping("/line-infos/{id}")
     public ResponseEntity<Void> deleteLineInfo(@PathVariable Long id) {
         log.debug("REST request to delete LineInfo : {}", id);
-        lineInfoRepository.deleteById(id);
+        lineInfoService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }
 }

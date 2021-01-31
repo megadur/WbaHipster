@@ -1,0 +1,2846 @@
+swagger: "2.0"
+info:
+  version: 2.24.0
+  title: OpdingRestApi
+  description:
+    "This document describes the operations and structures of the OpDiNG REST API endpoints."
+  contact:
+    name: Alexander Roock
+    email: alexander.roock@t-systems.com
+  x-api-identifier: tdeu.serviceTest.OpdingRestApi.2.24.0
+  x-api-lifecycleState: DRAFT
+  x-api-domain: serviceTest
+  x-api-governanceArea: tdeu
+  x-api-category: ENTERPRISE
+  x-api-application: OpDiNG
+  x-api-repository: net.telekom.tdeu.api.serviceTest.OpdingRestApi.0224
+  x-api-dataProtectionClass: DE4
+host: opding.telekom.de
+basePath: "/opding-api"
+schemes:
+  - https
+tags:
+  - name: Inventory
+    description: "Inventory related resources / operations."
+  - name: Common
+    description: "Generic resources / operations."
+  - name: "Diagnosis - Access Nodes"
+    description: "Diagnosis which can be executed on the access node resource."
+  - name: "Diagnosis - BNG"
+    description: "Diagnosis which can be executed on the bng resource."
+  - name: "Diagnosis - Platform Control"
+    description: "Diagnosis which can be executed on the platform control resource."
+  - name: "Diagnosis - VoIP"
+    description: "Diagnosis that can be executed on the voip resource."
+  - name: "Diagnosis - Miscellaneous"
+    description: "Different diagnoses that do not fit into the other categories."
+  - name: "Diagnosis - Grouped"
+    description: "Grouped diagnosis to execute two to many diagnoses with a single request."
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  '/inventory/subscriptionInfo':
+    get:
+      summary: Get subscription data.
+      description: "Gets a list with all available subscription data entries for the given input parameters."
+      operationId: get-subscriptionInfo
+      tags:
+        - Inventory
+      parameters:
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - in: query
+          name: searchvalue
+          type: string
+          required: true
+          description: "The value to be searched for. Could either be a combination of ONKZ + Rufnummer or a line id or a vertragsnummer or zugangsnummer."
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/subscriptionInfoResult'
+        '400':
+          $ref: '#/responses/400'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+
+  '/common/readHistory':
+    post:
+      summary: Gets the diagnostic history.
+      description: "Gets the diagnostic history for the specified line. The result can be limited in time using the parameter periodOfTime.\n
+                    Note that OpDiNG currently stores history entries for the last 90 days!"
+      operationId: post-readHistory
+      tags:
+        - Common
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readHistoryInputData
+          description: "The input data which is needed to perform the operation."
+          required: true
+          schema:
+            $ref: '#/definitions/readHistoryInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/common/getDiagnosesHistoryData':
+    post:
+      summary: Gets the diagnostic history data by orderId.
+      description: "Gets the diagnostic history data by orderId.\n
+                    Note that OpDiNG currently stores history entries for the last 90 days!"
+      operationId: post-getDiagnosesHistoryData
+      tags:
+        - Common
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: getDiagnosesHistoryDataInputData
+          description: "The input data which is needed to perform the operation."
+          required: true
+          schema:
+            $ref: '#/definitions/getDiagnosesHistoryDataInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/common/readAvailableDiagnoses':
+    post:
+      summary: Determines all available diagnostics for a ConfigItem.
+      description: "Determines all available diagnostics for a ConfigItem."
+      operationId: post-readAvailableDiagnoses
+      tags:
+        - Common
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readAvailableDiagnosesInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/accessNodes/controlSearchtone':
+    post:
+      summary: Execute a searchtone on a customer line.
+      description: "Starts or ends a searchtone on a customer line. Also possible to get the status of a running searchtone."
+      operationId: post-controlSearchtone
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: searchtoneInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/searchtoneInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/accessNodes/resetLine':
+    post:
+      summary: Reset of a customer line (copper only).
+      description: "Resets a customer line by resetting the port of the access node. This leads to a re-synchronisation of the line (with a loss of service in between)."
+      operationId: post-resetLine
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: resetLineInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/resetLineInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/accessNodes/readRuleResults':
+    post:
+      summary: Reads the rule results for a subscription from the OCEAN system.
+      description: "Reads the rule results for a subscription from the OCEAN system."
+      operationId: post-readRuleResults
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readRuleResultsInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/remoteDevice/acs/changePassword':
+    post:
+      summary: Changes the system-password of the router (used to get access to the configuration ui of the router). customer consent required!
+      description: "Changes the system-password of the router (used to get access to the configuration ui of the router). IMPORTANT: interface consumer system must ensure end consumer is informed and has agreed to access to his device!"
+      operationId: post-acs-change-password
+      tags:
+        - "Diagnosis - Remote Device"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name:  executeRmdRouterPasswordChange
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/executeRmdRouterChangePasswordInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/remoteDevice/acs/updateFirmware':
+    post:
+      summary: updates the firmware of the customer router. customer consent required!
+      description: "updates the firmware of the customer router. IMPORTANT: interface consumer system must ensure end consumer is informed and has agreed to access to his device!"
+      operationId: post-acs-update-firmware
+      tags:
+        - "Diagnosis - Remote Device"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: executeRmdRouterUpdateFirmware
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/remoteDevice/acs/reboot':
+    post:
+      summary: reboots the customer router. customer consent required!
+      description: "reboots the customer router. IMPORTANT: interface consumer system must ensure end consumer is informed and has agreed to access to his device!"
+      operationId: post-acs-reboot
+      tags:
+        - "Diagnosis - Remote Device"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: executeRmdRouterReboot
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/remoteDevice/acs/readExtendedRouterData':
+    post:
+      summary: reads extended information from customer router. customer consent required!
+      description: "reads extended information from customer router, including wifi information. IMPORTANT: interface consumer system must ensure end consumer is informed and has agreed to access to his device!"
+      operationId: post-acs-read-extended-data
+      tags:
+        - "Diagnosis - Remote Device"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readExtendedRouterData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/remoteDevice/acs/readRouterData':
+    post:
+      summary: reads basic information from customer router 
+      description: "reads basic information from customer router, e.g. router type, firmware version, ip address, serial number"
+      operationId: post-acs-read-data
+      tags:
+        - "Diagnosis - Remote Device"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readExtendedRouterData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+
+  '/diagnosis/grouped/reconfigure':
+    post:
+      summary: Reconfiguration of a customer service (Groups the reconfiguration of the port on the access node, the platform control profiles, and the user account).
+      description: "Reconfiguration of a customer service (Groups the reconfiguration of the port on the access node, the platform control profiles, and the user account)."
+      operationId: post-reconfigure
+      tags:
+        - "Diagnosis - Grouped"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: reconfigureInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/grouped/executeBasistest':
+    post:
+      summary: "This grouped diagnosis is a good starting point for a basic test of a customer line as it aggregates the most common tests."
+      description: "This grouped diagnosis executes and aggregates results of the following diagnoses:\n
+                    (Not all diagnoses will be executed! Watch for the conditions stated below.)\n
+                    * READ_AN_ANCP_STATUS (only if: „AccessPortTyp“ is not „POTS“ or „FTTH“ and AN-Managementsystem is not „SEAL“)\n
+                    * READ_AN_DSL_PORT_STATUS (only if: „AccessPortTyp“ is not „POTS“ or „FTTH“ and AN-Managementsystem is „SEAL“)\n
+                    * READ_AN_POTS_PORT_STATUS (only if: „AccessPortTyp“ is „POTS“)\n
+                    * EXECUTE_AN_ILTF (only if: evaluation of READ_AN_ANCP_STATUS = „red“ or evaluation of READ_AN_DSL_PORT_STATUS = „red“ or evaluation of READ_AN_POTS_PORT_STATUS = „red“ or evaluation of READ_HG_RULE_RESULTS = „red“ )\n
+                    * READ_AN_ONT_ETH_STATUS (only if: „AccessPortTyp“ is „FTTH“)\n
+                    * READ_AN_ONT_AVAILABILITY (only if: evaluation of READ_AN_ONT_ETH_STATUS = „red“)\n
+                    * EXECUTE_AN_CONFIG_CHECK\n
+                    * READ_CRM_T_CUSTOMERCONTRACTANDLOCKINFORMATION\n
+                    * READ_PFC_LINE_PROFILE\n
+                    * READ_PFC_SESSION_INFORMATION\n
+                    * READ_BNG_AAA_STATUS (only if: result of READ_PFC_SESSION_INFORMATION is „Derzeit keine Session in der Plattformsteuerung. (5002 - No Session found)“)\n
+                    * READ_IMS_VOIP_STATUS\n
+                    * READ_HG_RULE_RESULTS (only if: „AccessPortTyp“ is not („POTS“ or „FTTH“))"
+      operationId: post-executeBasistest
+      tags:
+        - "Diagnosis - Grouped"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: executeBasistestInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/accessNodes/readDslPortStatus':
+    post:
+      summary: With this function, the DSL port status is determined, this includes among other the status of the synchronicity of the customer connection line.
+      description: "With this function, the DSL port status is determined, this includes among other the status of the synchronicity of the customer connection line."
+      operationId: post-readDslPortStatus
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: ReadAnDslPortStatusInput
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/readDslPortStatusInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/accessNodes/changePort':
+    post:
+      summary: Execute a change port.
+      description: "With this diagnosis, the switchover of a customer port in the RMK A/T system is triggered.\nIn principle, two variants are distinguished: the change with specification of the destination port and the change with automatic destination port selection."
+      operationId: post-changePort
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: changePortInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/changePortInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/accessNodes/readChangePortList':
+    post:
+      summary: "This diagnosis gets a list of free target port groups."
+      description: "This diagnosis gets a list of free target port groups.
+                    A target port group for the correction function 'change port' (switchover of the booked customer port)
+                    can then be selected from this list.\n
+                    In the case of bonding, a port group contains the associated ports of a bonding group.\n
+                    For mass market products, a port group always contains exactly one port."
+      operationId: post-readChangePortList
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: changePortListInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/accessNodes/readOntAvailability':
+    post:
+      summary: "Determines the connection status for an ONT."
+      description: "This diagnosis determines the status of the connection from the OLT to the ONT
+                    (FTTH technology), in each case for a dedicated ONT (testOption = 'OneOnt') or,
+                    if applicable, also for all ONTs of the PON (testOption = 'Workflow' and
+                    customer ONT not reachable from OLT)."
+      operationId: post-readOntAvailability
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readAnOntAvailabilityInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/readAnOntAvailabilityInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/platformControl/readSessionInformation':
+    post:
+      summary: "Execute a readSessionInformation to retrieve the session and service information for a customer line (identified by LineId)."
+      description: "This diagnostic retrieves the session and service information by LineId (the LineId itself is identified by OpDiNG internally).
+                    The session and the services started underneath are returned. For network services,
+                    the maximum number of returned services is limited to 20. The networkServiceCount
+                    element returns the total number of network services in the session.\n
+                    Non-BNG ports cannot be diagnosed using this diagnosis!"
+      operationId: post-readSessionInformation
+      tags:
+        - "Diagnosis - Platform Control"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readSessionInformationInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/platformControl/resetSubscriberLogonLockStatus':
+    post:
+      summary: "Reset a customer's logon lock."
+      description: "The logon lock status of a subscriber can be reset via the RADIUS Data Provisioning application (RDQ-IN).
+                    As a result, a possibly existing password lock (caused by incorrect input of the password for example),
+                    will be reset."
+      operationId: post-resetSubscriberLogonLockStatus
+      tags:
+        - "Diagnosis - Platform Control"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: resetSubscriberLogonLockStatusInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/accessNodes/executeConfigCheck':
+    post:
+      summary: Executes a check of the customer specific configuration of the access node.
+      description: "This diagnostics identifies incorrect configurations on the access node.
+                    For that the expected configuration is transferred to the EMS and compared
+                    with the current configuration. Any deviations are returned to the caller.\n
+                    Deviations may however be desired as a result of the configuration
+                    intervention of the ASSIA tool, which is why the ASSIA information is also
+                    retrieved from OCEAN in parallel and also returned to the caller."
+      operationId: post-executeConfigCheck
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: executeConfigCheckInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/accessNodes/executeIltf':
+    post:
+      summary: This diagnostic invokes an ILTF measurement for a particular customer line at the EMS of the access node.
+      description: "This diagnostic invokes an ILTF (Integrated Line Test Function) measurement for a
+                    particular customer line at the EMS of the access node.\n
+                    The ILTF measurement refers to the physics of the copper pair. Physical parameters
+                    such as: cable length, resistance, external voltage, etc. can be measured.\n
+                    ILTF is an in-service measurement. This measurement is only possible if no repeaters
+                    are used. For bonded lines, it must be ensured that each single pair can be measured.\n
+                    *NOTE*: If the specified customer connection is a bonded SDSL connection, an ILTF
+                    measurement is automatically performed for each copper pair of the bonded copper access,
+                    without the user having to start the ILTF measurements separately for each pair."
+      operationId: post-executeIltf
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: executeIltfInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/executeIltfInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/bng/readAaaStatus':
+    post:
+      summary: Reads the AAA configuration for a user on the BNG.
+      description: "This diagnosis reads the associated AAA configuration details of a customer line (user-related)
+                    from the EMS of the BNG (JunosSpace)."
+      operationId: post-readAaaStatus
+      tags:
+        - "Diagnosis - BNG"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readAaaStatusInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/readAaaStatusInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/platformControl/readLineProfile':
+    post:
+      summary: Reads the customers's LineProfile information.
+      description: "This diagnosis reads the LineProfile stored in the platform control (RDQ-AIN) for a
+                    specific customer connection."
+      operationId: post-readLineProfile
+      tags:
+        - "Diagnosis - Platform Control"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readLineProfileInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/accessNodes/readAncpStatus':
+    post:
+      summary: This diagnostic checks the ANCP status (AN to BNG) and the online status of the customer modem.
+      description: "The status of the ANCP session between the access node and BNG is checked with the
+                    ANCP status query.\n
+                    In addition, the synchronization status of the customer modem (route modem to
+                    access node via the copper access line) is checked."
+      operationId: post-readAncpStatus
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readAncpStatusInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/accessNodes/readPotsPortStatus':
+    post:
+      summary: This diagnosis checks the current status of a POTS port on an access node.
+      description: "This diagnosis checks the current status of a POTS port on an access node.\n
+                    It determines the SIP Port state and a variety of further vendor specific status information."
+      operationId: post-readPotsPortStatus
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readPotsPortStatusInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/accessNodes/readOntEthernetStatus':
+    post:
+      summary: "This diagnosis determines the state of the Ethernet connection from the ONT to the customer device (FTTH technology)."
+      description: "Determines the status (up / down) of the Ethernet port on the ONT (towards the customer)."
+      operationId: post-readOntEthernetStatus
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readOntEthernetStatusInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/platformControl/disconnectUserSessions':
+    post:
+      summary: "Terminate all active user session in platform control."
+      description: "This resolution allows the termination of active PPP / PPPoE sessions of a user in the
+                    NAS and RADIUS proxy in the platform control (LISA).\n
+                    The termination of individual co-users is not supported. The sessions of all co-users
+                    are always terminated."
+      operationId: post-disconnectUserSessions
+      tags:
+        - "Diagnosis - Platform Control"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: disconnectUserSessionsInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/misc/readCustomerContractAndLockInformation':
+    post:
+      summary: Reads information on a customer's contract and existing locks.
+      description: "With this function, the customer's T-Online tariff and lock information (DKK lock) are
+                    queried based on the phone number or customer number."
+      operationId: post-readCustomerContractAndLockInformation
+      tags:
+        - "Diagnosis - Miscellaneous"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readCustomerContractAndLockInformationInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/misc/readCustomerContractData':
+    post:
+      summary: Reads the customer's contract data information.
+      description: "This diagnostic returns customer information from the CRM-T system.\n
+                    For a given customer number or phone number, all active T-Online contracts, their information
+                    on the stored access tariff and contract and DKK locks are determined and returned.\n
+                    The DKK locks are also known as Inkassosperren.\n
+                    It is important to know that DKK-locks can be present even if no contracts could be determined ."
+      operationId: post-readCustomerContractData
+      tags:
+        - "Diagnosis - Miscellaneous"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readCustomerContractDataInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/accessNodes/ontRediscovery':
+    post:
+      summary: "Puts an OLT in rediscovery mode to support the change of a customer's ONT."
+      description: "This function puts the OLT in rediscovery mode for a specific ONT-ID so that the
+                    connected (new) ONT will be registered on the OLT.\n
+                    The underlying use case is the change of a customer's ONT.\n
+                    (Note: Only for FTTH 1.7 provisioned ONTs! Not relevant for DigiOSS!)."
+      operationId: post-ontRediscovery
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: ontRediscoveryInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/accessNodes/ontReset':
+    post:
+      summary: "Triggers the reset of a customer's ONT."
+      description: "This corrective function resets the ONT (FTTH technology) of a customer which leads
+                    to a new synchronisation of the line.\n
+                    The communication between the customer ONT and the OLT is interrupted for the period
+                    of the reset process!"
+      operationId: post-ontReset
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: ontResetInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/accessNodes/executeLineMeasurement':
+    post:
+      summary: "This diagnosis performs a line measurement for a specific customer's line."
+      description: "The line measurement relates to the physics of the copper pair.
+                    Physical parameters such as: line bit rates, signal-to-noise ratios,
+                    attenuation values, etc. will be measured.\n
+                    The measurement data are only determined and returned for synchronous lines!\n\n
+                    NOTE: If the specified customer connection is a bonded SDSL connection,
+                    a line measurement is automatically performed for each copper pair of
+                    the bonded Copper-Access without the user having to start the measurements
+                    for each copper pair separately."
+      operationId: post-executeLineMeasurement
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: executeLineMeasurementInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/accessNodes/triggerShipmentOfTanLink':
+    post:
+      summary: "This diagnosis triggers the dispatching of a new TAN-Link to the customer during ONT commissioning."
+      description: "This diagnosis triggers the dispatching of a new TAN-Link (via email and / or SMS)
+                    to the customer for ONT registration (only for Giga FTTH).\n
+                    Note: The diagnosis can only be called during the order phase!"
+      operationId: post-triggerShipmentOfTanLink
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: ontTriggerNewTanInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/ontTriggerNewTanInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/accessNodes/changeOnt':
+    post:
+      summary: "Resolution to change a customer's ONT (only for Giga FTTH)"
+      description: "This diagnosis accompanies the ONT exchange, i.e. the new serial
+                    number is provisioned, the old de-provisioned (only for Giga
+                    provisioned FTTH connections)."
+      operationId: post-changeOnt
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: ontChangeInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/ontChangeInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/common/getSnapshotId':
+    post:
+      summary: Execute a getSnapshotId.
+      description: "Saves the given Snapshotdata for 7 days and returns a SnapshotID for identifying these data."
+      operationId: post-getSnapshotId
+      tags:
+        - Common
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: getSnapshotIdInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/getSnapshotIdInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/accessNodes/executeOntCommissioning':
+    post:
+      summary: "This resolution supports the two step ONT provisioning process (only for Giga FTTH) [Step 1]."
+      description: "This resolution supports the ONT provisioning process (only for Giga FTTH).
+                    With this function, ONT commissioning can be carried out by an agent in cooperation
+                    with the customer for a running Giga-FTTH deployment.\n
+                    The agent determines the ONT serial number and Home-ID in a customer conversation and
+                    determines the corresponding order item number from CRM-T.\n
+                    These three pieces of information are then written to the Giga-Inventories and  are used
+                    to configure the network element (OLT).\n
+                    Note: The diagnosis can only be called during the order phase!\n
+                    Attention: This function only represents the 1st step of ONT commissioning.
+                    To complete commissioning, finalizeOntCommissioning must be called up afterwards!"
+      operationId: post-executeOntCommissioning
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: ontCommissioningInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/ontCommissioningInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/accessNodes/finalizeOntCommissioning':
+    post:
+      summary: "This resolution supports the two step ONT provisioning process (only for Giga FTTH) [Step 2]."
+      description: "This resolution completes ONT commissioning (only for Giga FTTH connections).\n
+                    In other words, if the technical prerequisite was created beforehand using
+                    executeOntCommissioning, this step is used by to carry out a line test for the previously
+                    configured ONT and, if this is positive, the ongoing order process continues.\n
+                    Note: The diagnosis can only be called during the order phase!\n
+                    Attention: This function represents the 2nd step of ONT commissioning. It can only be carried
+                    out if step 1 was successfully executed before!"
+      operationId: post-finalizeOntCommissioning
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: ontCommissioningTestAndFinalizeInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/ontCommissioningTestAndFinalizeInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/platformControl/readSubscriberInformation':
+    post:
+      summary: "Reads subscriber Information from platform control."
+      description: "This diagnosis gets the data of a subscriber stored in the platform control (RADIUS data provisioning application (RDQ-IN))."
+      operationId: post-readSubscriberInformation
+      tags:
+        - "Diagnosis - Platform Control"
+      parameters:
+          - $ref: '#/parameters/X-Callback-Url'
+          - $ref: '#/parameters/X-Callback-Correlation-Id'
+          - $ref: '#/parameters/X-Business-Context'
+          - $ref: '#/parameters/X-Correlation-ID'
+          - $ref: '#/parameters/X-Request-ID'
+          - $ref: '#/parameters/X-Consumer'
+          - in: body
+            name: readSubscriberInformation
+            description: "The input data which is needed to perform the diagnosis."
+            required: true
+            schema:
+              $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/voip/readImsVoipStatus':
+    post:
+      summary: "Reads VoIP configuration parameters and status."
+      description: "Reads VoIP configuration parameters for a subscriber's phone numbers from the network elements
+                    and the Central Network Technology Database (CNTDB)."
+      operationId: postReadImsVoipStatus
+      tags:
+        - "Diagnosis - VoIP"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readImsVoipStatusInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/bng/readOpticsInterfaceStatus':
+    post:
+      summary: "This diagnosis retrieves information / states of the optic transceiver of the BNG."
+      description: "This diagnosis retrieves information / states of the optic transceiver of the BNG (via JunoSpace EMS)."
+      operationId: postReadOpticsInterfaceStatus
+      tags:
+        - "Diagnosis - BNG"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readOpticsInterfaceStatusInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/accessNodes/executeIltfContinuousMeasurement':
+    post:
+      summary: "This diagnosis executes a continuous measurement."
+      description: "This diagnosis executes a continuous measurement for a concrete customer line (POTS only)."
+      operationId: postExecuteIltfContinuousMeasurement
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: executeIltfContinuousMeasurementInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/platformControl/overruleAuthentication':
+    post:
+      summary: "With this diagnosis user id based authentication can be temporarily deactivated."
+      description: "With the introduction of BNG, customers are authenticated using LineId.
+                    Optionally, in addition,  customers can authenticate themselves with their
+                    user ID (ID and password).\n
+                    If the user ID is used and a service technician is on site for troubleshooting,
+                    who does not know the access data, this additional verification of the user ID
+                    can be overridden for a specified timespan using this correction function.\n
+                    The customer's settings are not overwritten!"
+      operationId: postOverruleAuthentication
+      tags:
+        - "Diagnosis - Platform Control"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: overruleAuthenticationInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/overruleAuthenticationInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/accessNodes/readDslOamStatus':
+    post:
+      summary: "This diagnosis performs a DSL OAM measurement for a specific customer's line."
+      description: "This diagnosis performs a DSL OAM measurement for a specific customer's line.\n\n
+                    NOTE: If the specified customer connection is a bonded SDSL connection,
+                    a line measurement is automatically performed for each copper pair of
+                    the bonded Copper-Access without the user having to start the measurements
+                    for each copper pair separately."
+      operationId: post-readDslOamStatus
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readDslOamStatusInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/platformControl/readNetworkServiceProfile':
+    post:
+      summary: "This diagnosis queries the network service profiles for a business IP connection
+                from the platform control inventory. (Only available for DCIP Business Connections)"
+      description: "Queries the network service profiles for a business IP connection from the platform control inventory.\n
+                    A network service profile describes the attributes of a VLAN (for control and / or payload session).
+                    It contains parameters such as the VLAN-ID of the control and / or payload session, the static or
+                    dynamically assigned IP address of the customer and bandwidths for different traffic classes
+                    (voice, low delay, best effort)."
+      operationId: post-readNetworkServiceProfile
+      tags:
+        - "Diagnosis - Platform Control"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readNetworkServiceProfileInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/accessNodes/executeDialToneTest':
+    post:
+      summary: "This diagnosis executes a dial tone test (POTS only)."
+      description: "Executes a dial tone test on a POTS line."
+      operationId: post-executeDialToneTest
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: executeDialToneTestInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/bng/readSubscribersSummaryInterfaceStatus':
+    post:
+      summary: "Determines the number of subscribers on the (customer's) physical interface port of the BNG."
+      description: "Determines the number of PPPOE- (tunneled and terminated) and L2BA-Sessions."
+      operationId: post-readSubscribersSummaryInterfaceStatus
+      tags:
+        - "Diagnosis - BNG"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readSubscribersSummaryInterfaceStatusInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/accessNodes/readAncpSessionInformation':
+    post:
+      summary: "This diagnosis lists the configured ANCP-Sessions of an access node (via SEAL)."
+      description: "Depending on the input data the result will be a list of all sessions belonging to a
+                    concrete customer Subscription or a list of all Sessions of a whole access node."
+      operationId: post-readAncpSessionInformation
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readAncpSessionInformationInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/readAncpSessionInformationInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/accessNodes/executeIltfCalibrationMeasurement':
+    post:
+      summary: "This diagnosis executes an ILTF calibration measurement.
+                The galvanic values 'A leg ground' and 'B leg ground' are determined and checked for plausibility."
+      description: "This measurement is only possible if no intermediate regenerators are used! This is an on-demand diagnosis."
+      operationId: post-executeIltfCalibrationMeasurement
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: executeIltfCalibrationMeasurementInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/accessNodes/readRpmPerformanceData':
+    post:
+      summary: "Reads the access nodes' RPM performance data for the customer line and returns JSON-Data
+                that can be rendered via OpDiNGs specialized RPM-UI-Component."
+      description: "If you have questions regarding this diagnoses, feel free to contact the OpDiNG team."
+      operationId: post-readRpmPerformanceData
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readRpmPerformanceDataInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/accessNodes/readFtthOpticalPower':
+    post:
+      summary: "Checks the optical power levels on the fiber (OLT- and ONU-Side)"
+      description: "Depending on the selection, checks the optical power levels on the fiber
+                    (measuring point on the OLT and on the ONU) of the connection or additionally
+                    the power levels for active ONUs within the same PON (passive optical
+                    network on the respective OLT port)."
+      operationId: post-readFtthOpticalPower
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readFtthOpticalPowerInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/readFtthOpticalPowerInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/accessNodes/readFtthOnuInformation':
+    post:
+      summary: "Retrieves type and firmware version information of the ONU."
+      description: "Retrieves type and firmware version information of the ONU (optical network unit) of the selected port."
+      operationId: post-readFtthOnuInformation
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readFtthOnuInformationInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/grouped/executeAbschlussmessungTechnik':
+    post:
+      summary: Executes the measurement 'Abschlussmessung Technik' and generates recommendations for further actions.
+      description: "Executes the measurement 'Abschlussmessung Technik' and generates recommendations for further actions."
+      operationId: post-executeAbschlussmessungTechnik
+      tags:
+        - "Diagnosis - Grouped"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: executeAbschlussmessungTechnikInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/grouped/executeAbschlussmessungLinientechnik':
+    post:
+      summary: Executes the measurement 'Abschlussmessung Linientechnik' and generates recommendations for further actions.
+      description: "Executes the measurement 'Abschlussmessung Linientechnik' and generates recommendations for further actions."
+      operationId: post-executeAbschlussmessungLinientechnik
+      tags:
+        - "Diagnosis - Grouped"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: executeAbschlussmessungLinientechnikInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/diagnosis/platformControl/readRouterInfo':
+    post:
+      summary: "Execute a readSessionInformation to retrieve the bng and bng port for a customer line (identified by LineId)."
+      description: "This diagnostic retrieves the bng and bng port information by LineId. Parameters are returned in case of a existing customer session. the function is meant for use by RMK AT for wholebuy customer subscriptions to determine the associated A10-NSP interface at the BNG."
+      operationId: post-readRouterInfo
+      tags:
+        - "Diagnosis - Platform Control"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readRouterInfoInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/readRouterInfoInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/remoteDevice/executeLayer3Ping':
+    post:
+      summary: "execute a L3 Ping to the RD"
+      description: "execute a L3 Ping to the RD"
+      operationId: post-executeRdL3PingRd
+      tags:
+        - "Diagnosis - Remote Device"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: executeRdL3PingInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/accessNodes/readVectoringStatus':
+    post:
+      summary: "retreives the vectoring status of the line"
+      description: "retreives the vectoring status of the line, responds wheter the line is in fallback mode, e.g. because of non-vectoring modem "
+      operationId: post-readVectoringStatus
+      tags:
+        - "Diagnosis - Access Nodes"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readAnVectoringStatusTestInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/remoteDevice/readInventoryData':
+    post:
+      summary: "Reads remote device inventory data"
+      description: "Reads the inventory data of the remote device (chassis and module) from resource inventory of Net Factory RD"
+      operationId: post-readRdInventoryData
+      tags:
+        - "Diagnosis - Remote Device"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: readRdInventoryDataInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/remoteDevice/updateFirmware':
+    post:
+      summary: "Updates remote device firmware"
+      description: "Updates remote device firmware. Executing this diagnosis will interrupt service for the customer."
+      operationId: post-firmwareUpdateRd
+      tags:
+        - "Diagnosis - Remote Device"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: firmwareUpdateRdInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/remoteDevice/reconfigure':
+    post:
+      summary: "Configures remote device"
+      description: "Configures the remote device to the target state according to the inventory data"
+      operationId: post-reconfigureRd
+      tags:
+        - "Diagnosis - Remote Device"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: reconfigureRdInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/remoteDevice/reboot':
+    post:
+      summary: "Restarts the remote device"
+      description: "Restarts the remote device"
+      operationId: post-rebootRd
+      tags:
+        - "Diagnosis - Remote Device"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: rebootRdInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/basicInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/diagnosis/remoteDevice/executeEthernetLoopback':
+    post:
+      summary: "Executes ethernet loopback"
+      description: "Executes ethernet loopback"
+      operationId: post-executeEthernetLoopback
+      tags:
+        - "Diagnosis - Remote Device"
+      parameters:
+        - $ref: '#/parameters/X-Callback-Url'
+        - $ref: '#/parameters/X-Callback-Correlation-Id'
+        - $ref: '#/parameters/X-Business-Context'
+        - $ref: '#/parameters/X-Correlation-ID'
+        - $ref: '#/parameters/X-Request-ID'
+        - $ref: '#/parameters/X-Consumer'
+        - in: body
+          name: executeEthernetLoopbackInputData
+          description: "The input data which is needed to perform the diagnosis."
+          required: true
+          schema:
+            $ref: '#/definitions/executeEthernetLoopbackInputData'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+parameters:
+  X-Correlation-ID:
+    name: X-Correlation-ID
+    in: header
+    required: false
+    description: 'Value for identifying a single transaction across multiple services up to the backend. Usually set by the originating consumer. It is strongly recommended to generate a UUID, which has 36 characters. (Requested by "REST and API Guidelines" of Enterprise Integration - Telekom IT)'
+    type: string
+  X-Request-ID:
+    name: X-Request-ID
+    in: header
+    required: false
+    description: 'Value to identify an individual request across consuming application, middleware and service provider. It is strongly recommended to generate a UUID, which has 36 characters. (Requested by "REST and API Guidelines" of Enterprise Integration - Telekom IT)'
+    type: string
+  X-Business-Context:
+    name: X-Business-Context
+    in: header
+    required: false
+    description: 'The business context is a general classification for a larger number of requests (types) usually set by the originating consumer. (Requested by "REST and API Guidelines" of Enterprise Integration - Telekom IT)'
+    type: string
+  X-Callback-Url:
+    name: X-Callback-Url
+    in: header
+    required: true
+    description: 'The REST-interface endpoint of the consumer to whom the callback is to be made.'
+    type: string
+    format: uri
+  X-Callback-Correlation-Id:
+    name: X-Callback-Correlation-Id
+    in: header
+    required: true
+    description: 'Value for identifying the callback to an asynchronous request (request/callback message exchange pattern). Set by the originating consumer with the request and added to the asynchronous callback by the provider.'
+    type: string
+    format: uuidv4
+  X-Consumer:
+    name: X-Consumer
+    in: header
+    required: false
+    description: 'A Tapir consumer that executes use case. Only set in production'
+    type: string
+
+definitions:
+  error:
+    title: error
+    description: "An error occured. The error object describes the concrete error situation."
+    type: object
+    required:
+      - message
+    properties:
+      message:
+        type: string
+        description: "Message, describing the current error situation."
+        example: "Für Vertragsnummer 3041928982 konnte keine Subscription gefunden werden!"
+      details:
+        type: string
+        description: "More details regarding the error situation (stack trace, etc.)."
+        example: "Hier stehen ggf. weitere Details zum Fehler!"
+  subscriptionInfoResult:
+    title: subscriptionInfoResult
+    description: "Wrapper for the list of subscriptionInfo elements."
+    type: object
+    required:
+      - subscriptionInfoList
+    properties:
+      subscriptionInfoList:
+        $ref: '#/definitions/subscriptionInfoList'
+  subscriptionInfoList:
+    title: subscriptionInfoList
+    description: "A list of zero to many subscription info objects."
+    type: array
+    items:
+      $ref: '#/definitions/subscriptionInfo'
+  subscriptionInfo:
+    title: subscriptionInfo
+    description: "Wraps the config item descriptor and the optional order id, which is present if and only if the subscription is still in the order phase."
+    type: object
+    required:
+      - ciDescriptor
+    properties:
+      ciDescriptor:
+        $ref: '#/definitions/ciDescriptor'
+      orderId:
+        type: string
+        description: "Order-Id of the associated order.\n
+                      If present the service provisioning is not finished yet (ongoing product change,
+                      termination, customer move, or new provision)."
+        example: "d16f027a-0be9-4a62-ae8b-0343e4b6ecd0"
+      dueDate:
+        type: string
+        format: date
+        description: "Date (KWT) when the order shall be fulfilled.\n
+                          Only available for orders (orderId available, see above).\n
+                          This information is not relevant for any dignosis requests and
+                          therefore can be omitted."
+        example: "2020-08-21"
+  ciDescriptor:
+    title: ciDescriptor
+    description: "Descriptor, is needed to address configuration elements within the (CA-CMDB) inventory."
+    type: object
+    required:
+      - type
+      - localId
+      - ngssmDomain
+    properties:
+      type:
+        type: string
+        description: "Type of the config item."
+        example: Subscription
+      localId:
+        type: string
+        description: "Id of the concrete config item."
+        example: "d16f027a-0be9-4a62-ae8b-0343e4b6ecd0"
+      ngssmDomain:
+        type: string
+        description: "Domain of the config item."
+        example: smk
+  basicInputData:
+    title: basicInputData
+    description: "Basic (minimal) input data needed to perform a diagnosis."
+    type: object
+    required:
+      - target
+    properties:
+      target:
+        $ref: '#/definitions/subscriptionInfo'
+  readHistoryInputData:
+    title: readHistoryInputData
+    description: "Input data needed to perform a read history operation."
+    type: object
+    required:
+      - target
+    properties:
+      target:
+        $ref: '#/definitions/subscriptionInfo'
+      additionalInput:
+        $ref: '#/definitions/readHistoryAdditionalInput'
+  readHistoryAdditionalInput:
+    title: readHistoryAdditionalInput
+    description: "The use case specific additional input data for read history operation."
+    type: object
+    properties:
+      periodOfTime:
+        type: integer
+        format: int32
+        description: "Specifies how long the history should go back (in minutes).\n
+                      If not present, all existing history entries will be returned.\n
+                      Note that OpDiNG currently stores history entries for the last 90 days."
+        example: 10
+
+  getDiagnosesHistoryDataInputData:
+    title: getDiagnosesHistoryDataInputData
+    description: "Input data needed to perform a getDiagnosesHistoryData operation."
+    type: object
+    required:
+      - orderId
+    properties:
+      orderId:
+        type: string
+        format: uuid
+        description: "orderId of the order in history\n
+                      Note that OpDiNG currently stores history entries for the last 90 days."
+        example: "e2e79e56-c9cb-4029-87bd-af2913988832"
+
+  searchtoneInputData:
+    title: searchtoneInputData
+    description: "Input data needed to perform a searchtone diagnosis."
+    type: object
+    required:
+      - target
+      - additionalInput
+    properties:
+      target:
+        $ref: '#/definitions/subscriptionInfo'
+      additionalInput:
+        $ref: '#/definitions/searchtoneAdditionalInput'
+
+  searchtoneAdditionalInput:
+    title: searchtoneAdditionalInput
+    description: "The use case specific additional input data for searchtone diagnosis."
+    type: object
+    required:
+      - testTrigger
+    properties:
+      testTrigger:
+        type: string
+        enum: [START, STOP, STATUS]
+        description: Either start or stop a searchtone or get the status of a running searchtone.
+        example: START
+      runDuration:
+        type: integer
+        format: int32
+        description: Run duration of the searchtone in minutes (range 1-90 minutes). After this duration, the searchtone is automatically stopped. The default value is 15 min.
+        example: 10
+      forceMode:
+        type: boolean
+        description: If set to true, active calls will be terminated. Default is false.
+        example: true
+      relativePortIndexinBondingGroup:
+        type: integer
+        format: int32
+        description: Relative port in the case of a bonding group at SDSL (currently 1-4, default is 1, the first port of bonding group)
+        example: 2
+  resetLineInputData:
+    title: The input data for resetLine
+    description: "Input data needed to perform a resetLine diagnosis."
+    type: object
+    required:
+      - target
+    properties:
+      target:
+        $ref: '#/definitions/subscriptionInfo'
+      additionalInput:
+        $ref: '#/definitions/resetLineAdditionalInput'
+  resetLineAdditionalInput:
+    title: resetLineAdditionalInput
+    description:  "The use case specific additional input data for resetLine diagnosis."
+    type: object
+    properties:
+      relativePortIndexInBondingGroup:
+        $ref: '#/definitions/relativePortIndexInBondingGroup'
+
+  executeRmdRouterChangePasswordInputData:
+    title: The input data for executeRmdRouterPasswordChange
+    description: "Input data needed to perform a executeRmdRouterPasswordChange diagnosis."
+    type: object
+    required:
+      - target
+      - additionalInput
+    properties:
+      target:
+        $ref: '#/definitions/subscriptionInfo'
+      additionalInput:
+        $ref: '#/definitions/executeRmdRouterChangePasswordAdditionalInput'
+
+  executeRmdRouterChangePasswordAdditionalInput:
+    title: The input data for executeRmdRouterPasswordChange
+    description: "Input data needed to perform a executeRmdRouterPasswordChange diagnosis."
+    type: object
+    properties:
+      newPassword:
+        type: string
+        pattern: '^[\S]{8,12}$'
+
+  readDslPortStatusInputData:
+    title: The input data for readDslPortStatus
+    description: "Input data needed to perform a readDslPortStatus diagnosis."
+    type: object
+    required:
+      - target
+    properties:
+      target:
+        $ref: '#/definitions/subscriptionInfo'
+      additionalInput:
+        $ref: '#/definitions/readDslPortStatusAdditionalInput'
+  readDslPortStatusAdditionalInput:
+    title: readDslPortStatusAdditionalInput
+    description:  "The use case specific additional input data for readDslPortStatus diagnosis."
+    type: object
+    properties:
+      relativePortIndexInBondingGroup:
+        $ref: '#/definitions/relativePortIndexInBondingGroup'
+  relativePortIndexInBondingGroup:
+    type: integer
+    format: int32
+    description: "Relative port in the case of a bonding group at SDSL (currently 1-4, default is 1, the first port of bonding group)"
+    example: 2
+  changePortInputData:
+    title: changePortInputData
+    description: "Input data needed to perform a changePort diagnosis."
+    type: object
+    required:
+      - target
+      - additionalInput
+    properties:
+      target:
+        $ref: '#/definitions/subscriptionInfo'
+      additionalInput:
+        $ref: '#/definitions/changePortAdditionalInput'
+  changePortAdditionalInput:
+    title: changePortAdditionalInput
+    description: "The use case specific additional input data for changePort diagnosis."
+    type: object
+    required:
+      - changePortList
+    properties:
+      changePortList:
+        $ref: '#/definitions/changePortList'
+  changePortList:
+    title: changePortList
+    description: "The list of change-port-descriptor objects which describe the switching (exactly one in case of unbonded lines and up to four in case of 4-wire bonded lines)."
+    type: object
+    properties:
+      changePortDescriptor:
+        type: array
+        items:
+          $ref: '#/definitions/changePortDescriptor'
+  changePortDescriptor:
+    title: changePortDescriptor
+    description: "Change-port-descriptor groups the data for the source (old) port and the optional (needed for explicit target selection) target port data."
+    type: object
+    required:
+      - oldPortStatus
+    properties:
+      oldPortStatus:
+        type: string
+        enum: ["defect", "locked", "free"]
+        description: "Status to be set for the old port, allowed values:\n
+                      * defect - old port is defect\n
+                      * locked - old port is locked\n
+                      * free - old port is free\n
+                      Important: If set to 'locked' you have to specify the parameter 'oldPortInfo'!"
+        example: free
+      oldPortInfo:
+        type: integer
+        format: int32
+        description: "Remark for the old port. Describes a reason for change port.\n
+                      1 = no sync / sync loss\n
+                      2 = signal / noise ratio\n
+                      3 = attenuation too high\n
+                      4 = error counter\n
+                      5 = disrupted voice service\n
+                      6 = contact strip / splitter defect\n
+                      7 = switching on module with increased range\n
+                      8 = attempt of port change\n
+                      9 = port defect in port change\n
+                      10 = other error\n
+                      Important: This parameter is mandatory if 'oldPortStatus' is set to 'locked'!"
+        example: 1
+      targetPort:
+        $ref: '#/definitions/targetPort'
+      oldPortNumber:
+        type: integer
+        format: int32
+        description: "Number of old port.\n
+                      **Mandatory** in case of bonding, if target port is omitted (to assign the oldPortInfo / oldPortStatus to a specific port)."
+        example: 1
+  targetPort:
+    title: targetPort
+    description: "Structure contains target port information. If omitted, the port(s) will be chosen automatically by RMK A/T."
+    type: object
+    required:
+      - msanEndSz
+      - slot
+      - portNumber
+    properties:
+      msanEndSz:
+        type: string
+        description: "Key to identify an AccessNode (MSAN or DSLAM). EndSz value is provided with ‘/’ symbol as a delimiter."
+        example: "49/30/001/7MC1"
+      slot:
+        type: string
+        description: "Reference to the slot."
+        example: "9"
+      subSlot:
+        type: string
+        description: "Reference to the sub slot. Sub-slot is mandatory if port is located on layer two cards.\n
+                      Currently configuration of access nodes doesn’t allow layer two cards and therefore sub-slot is optional (not used)."
+        example: "2"
+      portNumber:
+        type: integer
+        format: int32
+        description: "Number of the port on the card."
+        example: 1
+  readAnOntAvailabilityInputData:
+    title: readAnOntAvailabilityInputData
+    description: "Input data needed to perform an ontAvailability diagnosis."
+    type: object
+    required:
+      - target
+    properties:
+      target:
+        $ref: '#/definitions/subscriptionInfo'
+      additionalInput:
+        $ref: '#/definitions/readAnOntAvailabilityAdditionalInput'
+  readAnOntAvailabilityAdditionalInput:
+    title: readAnOntAvailabilityAdditionalInput
+    description: "additional input for readAnOntAvailability"
+    type: object
+    properties:
+      testOption:
+        type: string
+        enum: ["Workflow", "OneOnt"]
+        description: "Specifies the type of the request:\n
+                      * Workflow = Test of the customer ONT and, if this is not 'ONLINE', extension to all ONT’s in the PON (default).\n
+                      * OneOnt = Only the customer's ONT is tested."
+        example: "Workflow"
+      addLocationInfo:
+        type: boolean
+        description: "If set to true the result will be enriched with location information\n
+                      for every ONT (klsId and GfAP-Identifier). This can lead to a longer run time.\n
+                      If set to false (default), no location data will be retrieved."
+
+  executeIltfInputData:
+    title: executeIltfInputData
+    description: "Input data needed to perform a executeIltf diagnosis."
+    type: object
+    required:
+      - target
+    properties:
+      target:
+        $ref: '#/definitions/subscriptionInfo'
+      additionalInput:
+        $ref: '#/definitions/executeIltfAdditionalInput'
+  executeIltfAdditionalInput:
+    title: executeIltfAdditionalInput
+    description: "Input data needed to perform an ILTF diagnosis."
+    type: object
+    properties:
+      forceMode:
+        type: boolean
+        description: If set to true, BusyOverWrite will be set to true. Default is false.
+        example: true
+  readAaaStatusInputData:
+    title: readAaaStatusInputData
+    description: "Input data needed to perform a readAaaStatus diagnosis."
+    type: object
+    required:
+      - target
+    properties:
+      target:
+        $ref: '#/definitions/subscriptionInfo'
+      additionalInput:
+        $ref: '#/definitions/readAaaStatusAdditionalInput'
+  readAaaStatusAdditionalInput:
+    title: readAaaStatusAdditionalInput
+    description: "Additional input data needed to perform a readAaaStatus diagnosis."
+    type: object
+    properties:
+      user:
+        type: string
+        description: "T-Online-Id of the user."
+      password:
+        type: string
+        description: "With the T-Online-Id associated password."
+      lineId:
+        type: string
+        description: "LineID of the customer's line."
+
+  ontTriggerNewTanInputData:
+    title: ontTriggerNewTanInputData
+    description: "Input data needed to perform an ontTriggerNewTan diagnosis."
+    type: object
+    required:
+      - input
+    properties:
+      input:
+        $ref: '#/definitions/ontTriggerNewTanInput'
+  ontTriggerNewTanInput:
+    title: ontTriggerNewTanInput
+    description: "Input data needed to perform an triggerShipmentOfTanLink diagnosis.\n
+                  This diagnosis must be called without specifying a ciDescriptor,
+                  instead all of the input parameters given below must be passed as input!"
+    type: object
+    required:
+      - orderPositionNumber
+    properties:
+      email:
+        type: string
+        description: "Customer's email address the new TAN-Link will be send to.\n
+                      (At least one of the to fields email or phone must be present.)"
+      phone:
+        type: string
+        minLength: 8
+        maxLength: 25
+        description: "Customer's mobile phone number the new TAN-Link will be send to (SMS).\n
+                      Format: Leading '+' allowed followed by digits only [e.g. +491712653781 or 00491712653781].\n
+                      (At least one of the to fields email or phone must be present.)"
+        example: "+491713837648"
+      orderPositionNumber:
+        type: string
+        pattern: '^\d{15}$'
+        description: "The 'Auftragspositionsnummer' from CRM-T for the underlying order."
+        example: "800523824070039"
+
+  ontChangeInputData:
+    title: ontChangeInputData
+    description: "Input data needed to perform the change of an ONT."
+    type: object
+    required:
+      - target
+    properties:
+      target:
+        $ref: '#/definitions/subscriptionInfo'
+      additionalInput:
+        $ref: '#/definitions/ontChangeAdditionalInput'
+
+  ontChangeAdditionalInput:
+    title: ontChangeAdditionalInput
+    description: "Input data needed to perform an ontChange diagnosis."
+    type: object
+    required:
+      - ontSerialNumberOld
+      - ontSerialNumberNew
+      - customerNumber
+    properties:
+      ontSerialNumberOld:
+        type: string
+        pattern: '^\w{16}$'
+        description: "Serial number of the former (old) customer's ONT (16 char version)."
+        example: "414C434CF2F24711 "
+      ontSerialNumberNew:
+        type: string
+        pattern: '^\w{16}$'
+        description: "Serial number of the new customer's ONT for commissioning (16 char version)."
+        example: "48575443A9A94242 "
+      customerNumber:
+        type: string
+        pattern: '^\d{10}$'
+        description: "Number of the customer ('Kundennummer'). (10 digits)"
+
+  getSnapshotIdInputData:
+    title: getSnapshotIdInputData
+    description: "Input data needed to perform a getSnapshotId diagnosis."
+    type: object
+    required:
+      - input
+    properties:
+      input:
+        $ref: '#/definitions/getSnapshotIdInput'
+  getSnapshotIdInput:
+    title: getSnapshotIdInput
+    description: "Input data needed to perform an getSnapshotId diagnosis."
+    type: object
+    required:
+      - snapshotData
+    properties:
+      snapshotData:
+        $ref: '#/definitions/snapshotData'
+  snapshotData:
+    title: snapshotData
+    description: "The data a snapshot consists of."
+    type: object
+    required:
+      - astraData
+    properties:
+      astraData:
+        $ref: '#/definitions/astra'
+      additionalData:
+        $ref: '#/definitions/addition'
+  astra:
+    title: astra
+    description: "The part of snapshotdata coming from system Astra."
+    type: object
+    required:
+      - userName
+    properties:
+      circuitId:
+        type: string
+        description: "The Agent circuitID identifying the MSAN incl. Slot/Port and L2-Typ."
+        example: "10.182.56.81/0.0.0.0 eth 6/22:7"
+      lineId:
+        type: string
+        description: "Customer-Access-Line-Id"
+        example: "DEU.DTAG.8B8AF"
+      userName:
+        type: string
+        description: "Contains the federated user (föderierter Nutzer) at sessionCategory 5, 8 and 9.\n
+                      In other session-categories this field contains the 'Einwahlnutzer'."
+        example: "551102291642-0001"
+      userNameOrigin:
+        type: string
+        description: "Contains the 'Einwahlnutzer' at sessionCategory 5, 8 and 9 with:\n
+                        - Line identity of the subscriber (Anschlusskennung)\n
+                        - TOID\n
+                        - Mitbenutzernummer\n
+                        - Realm\n.
+                      In other categories this field is empty, because the 'Einwahlnutzer' is transportet in the field 'userName'."
+        example: "0014421556645511022916420001@t-online.de"
+      domainIndex:
+        type: integer
+        format: int32
+        description: "Domain index"
+      authentificationRequired:
+        type: integer
+        format: int32
+        description: "Only at line-based sessions. Range of values:\n
+                        0 = no authentification via user name and password\n
+                        1 = authentification via user name and password"
+      authenticationMethod:
+        type: string
+        enum: ["userbased", "linebased"]
+        description: "DTAG-Authentication-Method"
+      sessionCategory:
+        type: integer
+        format: int32
+        description: "Range of values:\n
+                        1 = User-based session at the port (no line-profil)\n
+                        2 = Plattform-Default-Session without line-profile\n
+                        3 = Line-based Business-Product-Session\n
+                        4 = User-based Massenmarkt-Session\n
+                        5 = Line-based Massenmarkt-Session\n
+                        6 = Incomplete line-based Massenmarkt-Session\n
+                        7 = L ine-based Plattform-Default-Session\n
+                        8 = Line-based Default-Session due to inequality of the User-Name\n
+                        9 = Line-based Default-Session because reject from the RADIUS server\n
+                        10 = Line-based L2BSA-Session"
+      sessionId:
+        type: string
+        description: "ASTRA SessionId"
+      bandwidthUs:
+        type: integer
+        format: int64
+        description: "Real bandwidth upstream in kbit/s"
+        #example: ""
+      bandwidthDs:
+        type: integer
+        format: int64
+        description: "Real bandwidth downstream in kbit/s"
+        #example: ""
+      syncBandwidthUs:
+        type: integer
+        format: int64
+        description: "Synchronized bandwidth upstream in kbit/s"
+        #example: ""
+      syncBandwidthDs:
+        type: integer
+        format: int64
+        description: "Synchronized bandwidth downstream in kbit/s"
+        #example: ""
+  addition:
+    title: addition
+    description: "Additional data not coming from system ASTRA."
+    type: object
+    properties:
+      toId:
+        type: string
+        description: "TOID"
+        #example: ""
+      ipAdress:
+        type: string
+        description: "IPv4-Address / IPv6-Address"
+        #example: ""
+      customerNumber:
+        type: string
+        description: "Customer number (Kundennummer)"
+        #example: ""
+      timeStamp:
+        type: string
+        format: date-time
+        description: "Timestamp of the snapshotData with time zone"
+        example: "2014-05-30T09:30:10+01:00"
+      guid:
+        type: string
+        description: "GUID from login"
+        #example: ""
+
+  ontCommissioningInputData:
+    title: ontCommissioningInputData
+    description: "Input data needed to perform an executeOntCommissioning diagnosis."
+    type: object
+    required:
+      - input
+    properties:
+      input:
+        $ref: '#/definitions/ontCommissioningInput'
+  ontCommissioningInput:
+    title: ontCommissioningInput
+    description: "Input data needed to perform an executeOntCommissioning diagnosis.\n
+                  This diagnosis must be called without specifying a ciDescriptor,
+                  instead all of the input parameters given below must be passed as input!"
+    type: object
+    required:
+      - ontSerialNumber
+      - homeId
+      - orderPositionNumber
+    properties:
+      ontSerialNumber:
+        type: string
+        pattern: '^\w{16}$'
+        description: "Serial number of the customer's ONT for commissioning (16 char version)."
+      homeId:
+        type: string
+        description: "Customer's home id (from Gf-TA)."
+      orderPositionNumber:
+        type: string
+        pattern: '^\d{15}$'
+        description: "The 'Auftragspositionsnummer' from CRM-T for the underlying order."
+        example: "800523824070039"
+
+  ontCommissioningTestAndFinalizeInputData:
+    title: ontCommissioningTestAndFinalizeInputData
+    description: "Input data needed to perform an finalizeOntCommissioning diagnosis."
+    type: object
+    required:
+      - input
+    properties:
+      input:
+        $ref: '#/definitions/ontCommissioningTestAndFinalizeInput'
+  ontCommissioningTestAndFinalizeInput:
+    title: ontCommissioningTestAndFinalizeInput
+    description: "Input data needed to perform a finalizeOntCommissioning diagnosis.\n
+                  This diagnosis must be called without specifying a ciDescriptor,
+                  instead the input parameter given below must be passed as input!"
+    type: object
+    required:
+      - orderPositionNumber
+    properties:
+      orderPositionNumber:
+        type: string
+        pattern: '^\d{15}$'
+        description: "The 'Auftragspositionsnummer' from CRM-T for the underlying order."
+        example: "800523824070039"
+
+  overruleAuthenticationInputData:
+    title: overruleAuthenticationInputData
+    description: "Input data needed to perform an overruleAuthentication diagnosis."
+    type: object
+    required:
+      - target
+      - additionalInput
+    properties:
+      target:
+        $ref: '#/definitions/subscriptionInfo'
+      additionalInput:
+        $ref: '#/definitions/overruleAuthenticationAdditionalInput'
+  overruleAuthenticationAdditionalInput:
+    title: overruleAuthenticationAdditionalInput
+    description: "Additional input data needed to perform an overruleAuthentication diagnosis."
+    type: object
+    required:
+      - authMeth
+    properties:
+      authMeth:
+        type: integer
+        format: int32
+        description: "Allowed values:\n
+                      * 0 - Deactivate overruling (set back to the settings set by the customer)\n
+                      * 1 - Overrules the settings of the customer (linebased only authentication switched on)"
+      runDuration:
+        type: integer
+        format: int32
+        description: "Run duration for overrule the settings in minutes (range 1-90 minutes).\n
+                      After this duration, the authentication method is automatically set back to the settings set by the customer.\n
+                      The default value is 90 min."
+
+  readAncpSessionInformationInputData:
+    title: readAncpSessionInformationInputData
+    description: "Input data to perform the readAncpSessionInformation diagnosis.\n
+                  Might either be a subscriptionInfo structure (e.g. Sessions for a concrete Subscription)
+                  or an EndSz (all Sessions of an access node)."
+    type: object
+    properties:
+      target:
+        $ref: '#/definitions/subscriptionInfo'
+      input:
+        $ref: '#/definitions/readAncpSessionInformationInput'
+  readAncpSessionInformationInput:
+    title: readAncpSessionInformationInput
+    description: "Alternative input data to perform the readAncpSessionInformation diagnosis."
+    type: object
+    properties:
+      endszAccessNode:
+        type: string
+        description: "EndSZ of the access node, for which the ANCP sessions should be determined.
+                      The EndSZ is expected in the following format: '49/30/60/7MA2'"
+        example: "49/30/60/7MA2"
+
+  readFtthOpticalPowerInputData:
+    title: readFtthOpticalPowerInputData
+    description: "Input data for optical power retrieval."
+    type: object
+    required:
+      - target
+    properties:
+      target:
+        $ref: '#/definitions/subscriptionInfo'
+      additionalInput:
+        $ref: '#/definitions/readFtthOpticalPowerInput'
+
+  readFtthOpticalPowerInput:
+    title: readFtthOpticalPowerInput
+    description: "Additional input data for the optical power retrieval."
+    type: object
+    properties:
+      includeNeighbours:
+        type: boolean
+        description: "Defines the mode for getting ONU power level information\n
+                      (with or without all active neighbour ONUs of the pon-port).\n
+                      Default value is 'false'."
+      addLocationInfo:
+        type: boolean
+        description: "If set to true the result will be enriched with location information\n
+                      for every ONT (klsId and GfAP-Identifier). This can lead to a longer run time.\n
+                      If set to false (default), no location data will be retrieved."
+
+  readRouterInfoInputData:
+    title: readRouterInfoInputData
+    description: "Input data for readRouterInfo"
+    type: object
+    required:
+      - lineId
+    properties:
+      lineId:
+        type: string
+        description: "LineID is input data for readRouterInfo"
+        example: "DEU.DTAG.HV8N8"
+
+  executeEthernetLoopbackInputData:
+    title: executeEthernetLoopbackInputData
+    description: "Input data for executeEthernetLoopback."
+    type: object
+    required:
+      - target
+    properties:
+      target:
+        $ref: '#/definitions/subscriptionInfo'
+      additionalInput:
+        $ref: '#/definitions/executeEthernetLoopbackInput'
+  executeEthernetLoopbackInput:
+    title: executeEthernetLoopbackInput
+    description: "Additional input data needed to perform an executeEthernetLoopback diagnosis."
+    type: object
+    properties:
+      rfsIdEvc:
+        type: string
+        description: "EVC RFS-ID -> execute loopback for EVC. if not given a L2 ping from RD to the BNG only DCIP"
+        example: "38905900-b9b9-4e4e-5f5f-bdbdbdbdbdbd"
+      rfsIdIpConnectivityService:
+        type: string
+        description: "for IP connectivity the RFSID of the IP Connectivity Service must provided here"
+      targetMacAddress:
+        type: string
+        description: "defines the MAC of the target (MEP/MIP)"
+        example: "00:24:44:ab:cd:ef"
+      targetMpId:
+        type: integer
+        description: "defines the loopback target via MEP-ID"
+        format: int32
+        example: 100
+      frameCos:
+        type: string
+        description: "QoS class the loopback PDU is sent with"
+        enum: ["LL", "LD", "VO", "NM", "BE"]
+        example: "LL"
+      frameSize:
+        type: integer
+        description: "NV4660: Specifies the size of the ETH-LB message in bytes. Valid range is 64-2000 bytes. ATN910I-D maximal data tlv-size of 9.528 bytes"
+        example: 64
+        format: int32
+
+responses:
+  '202':
+    description:
+      "Request accepted"
+  '400':
+    description:
+      "Bad Request\nGeneric client-side error: Errors can be like malformed request syntax, or invalid request message parameters.\nThe client SHOULD NOT repeat the request without modifications."
+    schema:
+      $ref: '#/definitions/error'
+  '403':
+    description:
+      "Client does not have access rights to the content so server is rejecting to give proper response"
+    schema:
+      $ref: '#/definitions/error'
+  '404':
+    description:
+      "Not found\n Indicates that the REST API can’t map the client’s request to a resource but may be available in the future. No indication is given of whether the condition is temporary or permanent."
+    schema:
+      $ref: '#/definitions/error'
+  '500':
+    description:
+      "Internal Server Error\nThe server has encountered a situation it doesn't know how to handle."
+    schema:
+      $ref: '#/definitions/error'
+p   C : \ U s e r s \ a 3 0 6 5 5 5 \ A p p D a t a \ L o c a l \ T e m p \ { 7 5 D 1 1 4 2 5 - 1 F B D - 4 4 5 A - B 8 F A - 9 5 7 0 7 1 2 2 B F 4 6 } \ O p D i N G _ R E S T _ A P I _ s w a g g e r _ p r o v i d e r . y a m l %   O p D i N G _ R E S T _ A P I _ s w a g g e r _ p r o v i d e r . y a m l C   C : \ U s e r s \ a 3 0 6 5 5 5 \ D e s k t o p \ y a m l \ O p D i N G _ R E S T _ A P I _ s w a g g e r _ p r o v i d e r . y a m l                                                                                                                                                                                                                                                                                                                                                                                                

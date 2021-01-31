@@ -35,11 +35,11 @@
   "entityTableName": "line_info",
   "dto": "no",
   "pagination": "no",
-  "service": "no",
+  "service": "serviceClass",
   "jpaMetamodelFiltering": false,
   "fluentMethods": true,
   "readOnly": false,
   "embedded": false,
   "clientRootFolder": "",
-  "applications": ["WbaHipster"]
+  "applications": "*"
 }

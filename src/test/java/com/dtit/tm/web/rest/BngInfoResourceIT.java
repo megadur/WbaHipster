@@ -4,6 +4,7 @@ import com.dtit.tm.WbaHipsterApp;
 import com.dtit.tm.config.TestSecurityConfiguration;
 import com.dtit.tm.domain.BngInfo;
 import com.dtit.tm.repository.BngInfoRepository;
+import com.dtit.tm.service.BngInfoService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,6 +49,9 @@ public class BngInfoResourceIT {
 
     @Autowired
     private BngInfoRepository bngInfoRepository;
+
+    @Autowired
+    private BngInfoService bngInfoService;
 
     @Autowired
     private EntityManager em;
@@ -181,7 +185,7 @@ public class BngInfoResourceIT {
     @Transactional
     public void updateBngInfo() throws Exception {
         // Initialize the database
-        bngInfoRepository.saveAndFlush(bngInfo);
+        bngInfoService.save(bngInfo);
 
         int databaseSizeBeforeUpdate = bngInfoRepository.findAll().size();
 
@@ -232,7 +236,7 @@ public class BngInfoResourceIT {
     @Transactional
     public void deleteBngInfo() throws Exception {
         // Initialize the database
-        bngInfoRepository.saveAndFlush(bngInfo);
+        bngInfoService.save(bngInfo);
 
         int databaseSizeBeforeDelete = bngInfoRepository.findAll().size();
 

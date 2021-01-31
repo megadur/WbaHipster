@@ -1,7 +1,7 @@
 package com.dtit.tm.web.rest;
 
 import com.dtit.tm.domain.BngInfo;
-import com.dtit.tm.repository.BngInfoRepository;
+import com.dtit.tm.service.BngInfoService;
 import com.dtit.tm.web.rest.errors.BadRequestAlertException;
 
 import io.github.jhipster.web.util.HeaderUtil;
@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -23,7 +22,6 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/api")
-@Transactional
 public class BngInfoResource {
 
     private final Logger log = LoggerFactory.getLogger(BngInfoResource.class);
@@ -33,10 +31,10 @@ public class BngInfoResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final BngInfoRepository bngInfoRepository;
+    private final BngInfoService bngInfoService;
 
-    public BngInfoResource(BngInfoRepository bngInfoRepository) {
-        this.bngInfoRepository = bngInfoRepository;
+    public BngInfoResource(BngInfoService bngInfoService) {
+        this.bngInfoService = bngInfoService;
     }
 
     /**
@@ -52,7 +50,7 @@ public class BngInfoResource {
         if (bngInfo.getId() != null) {
             throw new BadRequestAlertException("A new bngInfo cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        BngInfo result = bngInfoRepository.save(bngInfo);
+        BngInfo result = bngInfoService.save(bngInfo);
         return ResponseEntity.created(new URI("/api/bng-infos/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +71,7 @@ public class BngInfoResource {
         if (bngInfo.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        BngInfo result = bngInfoRepository.save(bngInfo);
+        BngInfo result = bngInfoService.save(bngInfo);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, bngInfo.getId().toString()))
             .body(result);
@@ -87,7 +85,7 @@ public class BngInfoResource {
     @GetMapping("/bng-infos")
     public List<BngInfo> getAllBngInfos() {
         log.debug("REST request to get all BngInfos");
-        return bngInfoRepository.findAll();
+        return bngInfoService.findAll();
     }
 
     /**
@@ -99,7 +97,7 @@ public class BngInfoResource {
     @GetMapping("/bng-infos/{id}")
     public ResponseEntity<BngInfo> getBngInfo(@PathVariable Long id) {
         log.debug("REST request to get BngInfo : {}", id);
-        Optional<BngInfo> bngInfo = bngInfoRepository.findById(id);
+        Optional<BngInfo> bngInfo = bngInfoService.findOne(id);
         return ResponseUtil.wrapOrNotFound(bngInfo);
     }
 
@@ -112,7 +110,7 @@ public class BngInfoResource {
     @DeleteMapping("/bng-infos/{id}")
     public ResponseEntity<Void> deleteBngInfo(@PathVariable Long id) {
         log.debug("REST request to delete BngInfo : {}", id);
-        bngInfoRepository.deleteById(id);
+        bngInfoService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }
 }

@@ -1,0 +1,631 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "## The API defines the service for publishing event-notifications for Service Order Notifications according to TMF641\n\n ## Updated for T-Magic (Publish/Subscribe): 25 January 2019 \n\n ## Event attributes added \n - eventTopic \n - eventVersion \n - eventSource \n ###  Update 24.04.2019 \n - changed ServiceOrder.notes to ServiceOrder.note (version 1.0.0 to 1.0.1)\n \n \n ### Update 27.08.2019 (Version 1.0.2) \n Changes for RC20.1: All changes shall be downward compatbile: \n  - for use case move: new additional optional attribute ServiceOrder.moveUseCase \n \n ### Update 29.01.2020 (Version 1.0.3) \n Changes for RC20.3: Breaking change: \n  - removed optional attribute ServiceOrder.externalOrderNumber \n \n",
+    "version": "1.0.3",
+    "title": "TMF641 Notification Interface"
+  },
+  "host": "serverRoot",
+  "basePath": "/pubsub/p/service-order-service-inventory/v1/ServiceOrderEvents",
+  "schemes": ["https"],
+  "consumes": ["application/json;charset=utf-8"],
+  "produces": ["application/json;charset=utf-8"],
+  "paths": {
+    "/": {
+      "post": {
+        "tags": ["Notification"],
+        "operationId": "PublishEvent",
+        "summary": "Endpoint for publishing service order events",
+        "description": "\n\nSpecific business errors for current operation will be encapsulated in\n\nHTTP Response 422 Unprocessable entity\n",
+        "deprecated": false,
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ServiceOrderNotification"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ActionType": {
+      "description": "",
+      "type": "string",
+      "enum": ["add", "modify", "delete", "noChange"]
+    },
+    "StateType": {
+      "description": "",
+      "type": "string",
+      "enum": ["acknowledged", "rejected", "pending", "held", "inProgress", "cancelled", "completed", "failed", "partial"]
+    },
+    "ServiceStateType": {
+      "description": "",
+      "type": "string",
+      "enum": ["feasibility_checked", "designed", "reserved", "inactive", "active", "terminated"]
+    },
+    "ErrorRepresentation": {
+      "description": "",
+      "required": ["code", "reason"],
+      "type": "object",
+      "properties": {
+        "code": {
+          "description": "Application related code (as defined in the API or from a common list)",
+          "type": "integer",
+          "format": "int32"
+        },
+        "reason": {
+          "description": "Text that explains the reason for error. This can be shown to a client user.",
+          "type": "string"
+        },
+        "message": {
+          "description": "Text that provide more details and corrective actions related to the error. This can be shown to a client user",
+          "type": "string"
+        },
+        "status": {
+          "description": "http error code extension like 400-2",
+          "type": "string"
+        },
+        "referenceError": {
+          "description": "url pointing to documentation describing the error",
+          "type": "string"
+        },
+        "@type": {
+          "description": "The class type of a REST resource",
+          "type": "string"
+        },
+        "@schemaLocation": {
+          "description": "it provides a link to the schema describing a REST resource",
+          "type": "string"
+        }
+      }
+    },
+    "ServiceRelationship": {
+      "description": "Linked Services to the one instantiate",
+      "required": ["type", "service"],
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "Relationship type. It can be : “reliesOn” if the Service needs another already owned Service to rely on (e.g. an option on an already owned mobile access Service) or “targets” or “isTargeted” (depending on the way               of expressing the link) for any other kind of links that may be useful",
+          "type": "string"
+        },
+        "service": {
+          "$ref": "#/definitions/Service"
+        }
+      }
+    },
+    "ServiceRef": {
+      "description": "Service references",
+      "required": ["id"],
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique identifier of the service",
+          "type": "string"
+        },
+        "href": {
+          "description": "Reference of the service",
+          "type": "string"
+        }
+      }
+    },
+    "ServiceCharacteristic": {
+      "description": "A list of name value pairs that define the service characteristics",
+      "required": ["name"],
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Name of the characteristic",
+          "type": "string"
+        },
+        "valueType": {
+          "description": "",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/definitions/Value"
+        }
+      }
+    },
+    "RelatedParty": {
+      "description": "This object is currently not supported and therefore ignored and not used in the Service Order Management Interface",
+      "required": ["id", "role"],
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique identifier of a related party",
+          "type": "string"
+        },
+        "href": {
+          "description": "An hyperlink to the party",
+          "type": "string"
+        },
+        "role": {
+          "description": "The role of the related party (e.g. Owner, requester, fullfiller etc)",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name of the related party",
+          "type": "string"
+        },
+        "@referredType": {
+          "description": "",
+          "type": "string"
+        }
+      }
+    },
+    "ServiceSpecificationRef": {
+      "description": "The service specification (default values, etc. are fetched from the catalogue).",
+      "required": ["id"],
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique identifier of the service specification",
+          "type": "string"
+        },
+        "href": {
+          "description": "Reference of the service specification",
+          "type": "string"
+        },
+        "name": {
+          "description": "",
+          "type": "string"
+        },
+        "version": {
+          "description": "",
+          "type": "string"
+        },
+        "targetServiceSchema": {
+          "$ref": "#/definitions/TargetServiceSchema"
+        },
+        "@type": {
+          "description": "",
+          "type": "string"
+        },
+        "@schemaLocation": {
+          "description": "",
+          "type": "string"
+        },
+        "@baseType": {
+          "description": "",
+          "type": "string"
+        }
+      }
+    },
+    "Service": {
+      "description": "Service attributes description (these are as per the Service ODE model as used in the Service Inventory specification)",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Identifier of a service instance",
+          "type": "string"
+        },
+        "href": {
+          "description": "This element is currently not supported and therefore ignored and not used in the Service Order Management Interface",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name of the service",
+          "type": "string"
+        },
+        "serviceState": {
+          "$ref": "#/definitions/ServiceStateType"
+        },
+        "type": {
+          "description": "",
+          "type": "string"
+        },
+        "@type": {
+          "description": "",
+          "type": "string"
+        },
+        "@schemaLocation": {
+          "description": "",
+          "type": "string"
+        },
+        "place": {
+          "description": "This element is currently not supported and therefore ignored and not used in the Service Order Management Interface",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Place"
+          }
+        },
+        "serviceCharacteristic": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ServiceCharacteristic"
+          }
+        },
+        "serviceRelationship": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ServiceRelationship"
+          }
+        },
+        "relatedParty": {
+          "description": "This element is currently not supported and therefore ignored and not used in the Service Order Management Interface",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RelatedParty"
+          }
+        },
+        "serviceSpecification": {
+          "$ref": "#/definitions/ServiceSpecificationRef"
+        }
+      }
+    },
+    "Place": {
+      "description": "This element is currently not supported and therefore ignored and not used in the Service Order Management Interface",
+      "required": ["role"],
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "",
+          "type": "string"
+        },
+        "href": {
+          "description": "Reference of a place (for instance in google map)",
+          "type": "string"
+        },
+        "name": {
+          "description": "",
+          "type": "string"
+        },
+        "role": {
+          "description": "The role of the place (e.g. delivery address, install site etc)",
+          "type": "string"
+        },
+        "@referredType": {
+          "description": "",
+          "type": "string"
+        },
+        "@schemaLocation": {
+          "description": "",
+          "type": "string"
+        }
+      }
+    },
+    "OrderItemRelationship": {
+      "description": "Linked order item to the one containing this attribute",
+      "required": ["type", "id"],
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "The type of related order item, can be : dependancy if the order item needs to be “not started” until another order item is complete",
+          "type": "string"
+        },
+        "id": {
+          "description": "Unique identifier of an order item",
+          "type": "string"
+        }
+      }
+    },
+    "ServiceOrderItem": {
+      "description": "An identified part of the order. A service order is decomposed into one or more order items.",
+      "required": ["id", "service"],
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Identifier of the line item (generally it is a sequence number 01, 02, 03, …)",
+          "type": "string"
+        },
+        "action": {
+          "$ref": "#/definitions/ActionType"
+        },
+        "state": {
+          "$ref": "#/definitions/StateType"
+        },
+        "@type": {
+          "description": "",
+          "type": "string"
+        },
+        "@schemaLocation": {
+          "description": "",
+          "type": "string"
+        },
+        "@baseType": {
+          "description": "",
+          "type": "string"
+        },
+        "appointment": {
+          "description": "This element is currently not supported and therefore ignored and not used in the Service Order Management Interface",
+          "$ref": "#/definitions/AppointmentRef"
+        },
+        "orderItemRelationship": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OrderItemRelationship"
+          }
+        },
+        "service": {
+          "$ref": "#/definitions/Service"
+        }
+      }
+    },
+    "AppointmentRef": {
+      "description": "This element is currently not supported and therefore ignored and not used in the Service Order Management Interface",
+      "required": ["id", "href"],
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique identifier of the appointment",
+          "type": "string"
+        },
+        "href": {
+          "description": "Reference of the appointmenrt",
+          "type": "string"
+        },
+        "@referredType": {
+          "description": "",
+          "type": "string"
+        }
+      }
+    },
+    "Note": {
+      "description": "Extra-information about the order: Can be either a created by human task or system.",
+      "required": ["date", "author", "text"],
+      "type": "object",
+      "properties": {
+        "date": {
+          "description": "Date of the note. Format shall comply with ISO-8601: YYYY-MM-DDThh:mm:ss.SSSXXX",
+          "type": "string",
+          "format": "date-time"
+        },
+        "author": {
+          "description": "Author of the note - can also denote the part of a process, which caused the creation of this note",
+          "type": "string"
+        },
+        "text": {
+          "description": "Text of the note, as summary of the content. format is [16 Digit number:severity:system:author:messageInformation]",
+          "type": "string"
+        },
+        "system": {
+          "description": "Describes the system from which the action related to this note was done",
+          "type": "string"
+        },
+        "code": {
+          "description": "code of the message (return code) . in case the attribute Fehlerbildnummer is set, it contains this value'",
+          "type": "string"
+        },
+        "field": {
+          "description": "Contains the name of the field or name of the resource associated with this message",
+          "type": "string"
+        },
+        "messageInformation": {
+          "description": "A description of the message, human readable, contains identifier for elements",
+          "type": "string"
+        },
+        "severity": {
+          "description": "Severity of the message in case of error. INFO: correct processing incl. order corresponding, relevant processing errors, like incorrect data, failed processual race conditions, etc. WARN, ERR, CRIT: Technical errors like exceptions, not accessible interfaces, timeouts, breakdowns ",
+          "type": "string",
+          "enum": ["INFO", "WARN", "ERR", "CRIT"]
+        },
+        "correctionRequired": {
+          "description": "Is a correction and resubmission of the Service Order necessary",
+          "type": "boolean"
+        },
+        "Fehlerbildnummer": {
+          "description": "contains a 16 digit number, which identifies the error type in case of errors",
+          "type": "number"
+        }
+      }
+    },
+    "ServiceOrder": {
+      "description": "A Service Order is a type of order which can be used to place an order between a customer and a service provider or between a service provider and a partner and vice versa",
+      "required": ["id"],
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "ID created on repository side",
+          "type": "string"
+        },
+        "href": {
+          "description": "This element is currently not supported and therefore ignored and not used in the Service Order Management Interface",
+          "type": "string"
+        },
+        "externalId": {
+          "description": "ID given by the consumer and only understandable by him (to facilitate his searches)",
+          "type": "string"
+        },
+        "BSS_OE_OrderID": {
+          "description": "unique ID of an AL-MV- / AMK-order",
+          "type": "string"
+        },
+        "moveUseCase": {
+          "description": "optional attribute, which specifies the use case in case of the move business process. The only possible values are: MoveIn, MoveOut",
+          "type": "string",
+          "enum": ["MoveIn", "MoveOut"]
+        },
+        "priority": {
+          "description": "This element is currently not supported and therefore ignored and not used in the Service Order Management Interface",
+          "type": "string"
+        },
+        "description": {
+          "description": "This element is currently not supported and therefore ignored and not used in the Service Order Management Interface",
+          "type": "string"
+        },
+        "category": {
+          "description": "This element is currently not supported and therefore ignored and not used in the Service Order Management Interface",
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/definitions/StateType"
+        },
+        "orderDate": {
+          "description": "",
+          "type": "string",
+          "format": "date-time"
+        },
+        "completionDate": {
+          "description": "",
+          "type": "string"
+        },
+        "requestedStartDate": {
+          "description": "Order start date wished by the requestor",
+          "type": "string",
+          "format": "date-time"
+        },
+        "requestedCompletionDate": {
+          "description": "Requested delivery date from the requestor perspective",
+          "type": "string",
+          "format": "date-time"
+        },
+        "expectedCompletionDate": {
+          "description": "This element is currently not supported and therefore ignored and not used in the Service Order Management Interface",
+          "type": "string",
+          "format": "date-time"
+        },
+        "startDate": {
+          "description": "Date when the order was started for processing",
+          "type": "string",
+          "format": "date-time"
+        },
+        "notificationContact": {
+          "description": "Contact attached to the order to send back information regarding this order",
+          "type": "string"
+        },
+        "@baseType": {
+          "description": "",
+          "type": "string"
+        },
+        "@type": {
+          "description": "",
+          "type": "string"
+        },
+        "@schemaLocation": {
+          "description": "",
+          "type": "string"
+        },
+        "note": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Note"
+          }
+        },
+        "relatedParty": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RelatedParty"
+          }
+        },
+        "orderRelationship": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OrderRelationship"
+          }
+        },
+        "orderItem": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ServiceOrderItem"
+          }
+        }
+      }
+    },
+    "OrderRelationship": {
+      "description": "Linked order to the one containing this attribute",
+      "required": ["id"],
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "The type of related order, can be : “dependency” if the order needs to be “not started” until another order item is complete (a service order in this case) or “cross-ref” to keep track of the source order (a productOrder)",
+          "type": "string"
+        },
+        "id": {
+          "description": "The id of the related order",
+          "type": "string"
+        },
+        "href": {
+          "description": "A hyperlink to the related order",
+          "type": "string"
+        },
+        "@referredType": {
+          "description": "",
+          "type": "string"
+        }
+      }
+    },
+    "TargetServiceSchema": {
+      "description": "",
+      "required": ["@type", "@schemaLocation"],
+      "type": "object",
+      "properties": {
+        "@type": {
+          "description": "",
+          "type": "string"
+        },
+        "@schemaLocation": {
+          "description": "",
+          "type": "string"
+        }
+      }
+    },
+    "Value": {
+      "description": "Structure used to describe characteristic value",
+      "type": "object",
+      "properties": {
+        "@type": {
+          "description": "",
+          "type": "string"
+        },
+        "@schemaLocation": {
+          "description": "",
+          "type": "string"
+        },
+        "value": {
+          "description": "actual characteristcs value - attention: deviation from TMF",
+          "type": "string"
+        }
+      }
+    },
+    "ServiceOrderNotification": {
+      "description": "stucture for ServiceOrderNotification request.",
+      "type": "object",
+      "properties": {
+        "eventid": {
+          "description": "identifies the event by unique id",
+          "type": "string"
+        },
+        "eventTopic": {
+          "description": "specifies the name of the topic, on which the event was published",
+          "type": "string"
+        },
+        "eventVersion": {
+          "description": "specifies the version of the event (major.minor version)",
+          "type": "string"
+        },
+        "eventSource": {
+          "description": "specifies the name of the microservice providing the event ",
+          "type": "string"
+        },
+        "eventType": {
+          "description": "specifies type of notification ",
+          "type": "string",
+          "enum": ["ServiceOrderStateChangeNotification", "ServiceOrderCreationNotification", "ServiceOrderRemoveNotification"]
+        },
+        "eventTime": {
+          "description": "record of time when event occured, format in DateTime (ISO-8601)",
+          "type": "string",
+          "format": "DateTime"
+        },
+        "event": {
+          "description": "specifies type of notification ",
+          "type": "object",
+          "properties": {
+            "ServiceOrder": {
+              "$ref": "#/definitions/ServiceOrder"
+            }
+          }
+        }
+      }
+    }
+  }
+}

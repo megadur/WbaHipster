@@ -32,7 +32,7 @@
     "skipServer": false,
     "useSass": true,
     "jhipsterVersion": "6.10.5",
-    "creationTimestamp": 1611563880569,
+    "creationTimestamp": 1612021260332,
     "embeddableLaunchScript": false,
     "entitySuffix": "",
     "otherModules": [],
